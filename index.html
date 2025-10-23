@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Team Performance - Menu Only</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f9f9f9;
+    }
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 24px;
+      color: #444;
+    }
+    .nav-link {
+      color: #333;
+    }
+    .dropdown-menu a {
+      font-size: 14px;
+    }
+    .dropdown-submenu {
+      position: relative;
+    }
+    .dropdown-submenu > .dropdown-menu {
+      top: 0;
+      left: 100%;
+      margin-left: 0.1rem;
+      margin-right: 0.1rem;
+    }
+    .dropdown-submenu:hover > .dropdown-menu {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+        <img src="PERFORMANCE TEAM.png" style="height: 40px; margin-right: 10px;">
+        PERFORMANCE BAN-TAN
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          
+          <!-- DASHBOARD -->
+          <li class="nav-item">
+            <a class="nav-link" href="#">Dashboards</a>
+          </li>
+
+          <!-- RACING -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="racingDropdown" role="button" data-bs-toggle="dropdown">Racing</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#">Revenue TAN-BAN</a></li>
+              <li><a class="dropdown-item" href="#">Racing Mitra</a></li>
+              <li><a class="dropdown-item" href="#">Racing HSA</a></li>
+              <li><a class="dropdown-item" href="#">Racing IOAN Mitra</a></li>
+              <li><a class="dropdown-item" href="#">Dashboard PI Laten</a></li>
+              <li><a class="dropdown-item" href="#">Dashboard IOAN B2C</a></li>
+              <li><a class="dropdown-item" href="#">Dashboard Non IOAN B2B</a></li>
+              <li><a class="dropdown-item" href="#">Dashboard WSA</a></li>
+              <li><a class="dropdown-item" href="#">Dashboard MSA</a></li>
+              <li><a class="dropdown-item" href="#">Dashboard Maintenance</a></li>
+              <li><a class="dropdown-item" href="#">Laporan WA</a></li>
+              <li><a class="dropdown-item" href="#">Executive Report</a></li>
+            </ul>
+          </li>
+
+          <!-- KPI IOAN -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="kpiioanDropdown" role="button" data-bs-toggle="dropdown">KPI IOAN</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#">Summary Tiket B2C</a></li>
+              <li><a class="dropdown-item" href="#">Service Availability</a></li>
+              <li><a class="dropdown-item" href="#">Assurance Guarantee</a></li>
+              <li><a class="dropdown-item" href="#">TTR</a></li>
+              <li><a class="dropdown-item" href="#">Underspec</a></li>
+              <li><a class="dropdown-item" href="#">Tangible</a></li>
+              <li><a class="dropdown-item" href="#">Validasi</a></li>
+              <li class="dropdown-submenu dropend">
+                <a class="dropdown-item dropdown-toggle" href="#">SQM</a>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="#">SQM 4 Jam</a></li>
+                  <li><a class="dropdown-item" href="#">KPI SQM</a></li>
+                </ul>
+              </li>
+              <li><a class="dropdown-item" href="#">SCC</a></li>
+              <li><a class="dropdown-item" href="#">Infracare</a></li>
+              <li><a class="dropdown-item" href="#">Ext Audit</a></li>
+            </ul>
+          </li>
+
+          <!-- KPI 12 PI LATEN -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="kpi12piDropdown" role="button" data-bs-toggle="dropdown">KPI 12 PI Laten</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#">Gamas</a></li>
+              <li><a class="dropdown-item" href="#">PS/RE</a></li>
+              <li><a class="dropdown-item" href="#">Wifi</a></li>
+              <li><a class="dropdown-item" href="#">HSI Datin</a></li>
+            </ul>
+          </li>
+
+          <!-- KPI NON SEKTOR B2B -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="kpiB2BDropdown" role="button" data-bs-toggle="dropdown">KPI Non Sektor B2B</a>
+            <ul class="dropdown-menu">
+              <li class="dropdown-submenu dropend">
+                <a class="dropdown-item dropdown-toggle" href="#">HSI</a>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="#">Q HSI</a></li>
+                  <li><a class="dropdown-item" href="#">ASGAR HSI</a></li>
+                  <li><a class="dropdown-item" href="#">TTR HSI</a></li>
+                </ul>
+              </li>
+              <li><a class="dropdown-item" href="#">DATIN</a></li>
+              <li><a class="dropdown-item" href="#">WIFI</a></li>
+              <li><a class="dropdown-item" href="#">OLO</a></li>
+            </ul>
+          </li>
+
+          <!-- KPI WSA -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="kpiWSADropdown" role="button" data-bs-toggle="dropdown">KPI WSA</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#">FFG</a></li>
+              <li><a class="dropdown-item" href="#">TTI</a></li>
+              <li><a class="dropdown-item" href="#">Service Availability</a></li>
+              <li><a class="dropdown-item" href="#">Assurance Guarantee</a></li>
+              <li><a class="dropdown-item" href="#">TTR</a></li>
+            </ul>
+          </li>
+
+          <!-- KPI MAINTENANCE -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="kpiMTCDropdown" role="button" data-bs-toggle="dropdown">KPI Maintenance</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#">FTM</a></li>
+              <li><a class="dropdown-item" href="#">OLT</a></li>
+              <li><a class="dropdown-item" href="#">GAMAS</a></li>
+              <li><a class="dropdown-item" href="#">Pengawasan Project P3</a></li>
+              <li><a class="dropdown-item" href="#">Patroli Akses</a></li>
+            </ul>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
