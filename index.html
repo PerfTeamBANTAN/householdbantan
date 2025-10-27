@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard Team Performance - Home Fullscreen</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -12,6 +13,7 @@
       background-color: #ffffff;
     }
 
+    /* === NAVBAR === */
     .navbar-brand {
       font-weight: bold;
       font-size: 24px;
@@ -41,18 +43,31 @@
       display: block;
     }
 
-    /* ==== FULLSCREEN IMAGE TERANG ==== */
+    /* === FULLSCREEN HOME IMAGE === */
     .home-fullscreen {
       position: relative;
       width: 100%;
-      height: calc(100vh - 70px); /* Menyesuaikan tinggi navbar */
-      background: url('homescreen.jpg') no-repeat center center;
-      background-size: cover;
+      height: calc(100vh - 70px); /* Sesuaikan tinggi dengan navbar */
+      background: url('homescreen.jpg') center center / cover no-repeat;
+      background-attachment: fixed; /* Biar gambar tajam dan tidak ikut scroll */
       background-color: #ffffff;
       filter: brightness(1.1) contrast(1.05); /* Lebih terang dan jernih */
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+      image-rendering: high-quality;
+      -webkit-backface-visibility: hidden;
+      overflow: hidden;
     }
 
-    /* Jika ingin tetap rata tengah, tambahkan flex container */
+    /* === OVERLAY LEMBUT UNTUK KONTRAS === */
+    .home-fullscreen::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.25); /* bisa ubah opacity 0.25-0.35 */
+    }
+
+    /* === TEKS DI TENGAH GAMBAR === */
     .home-fullscreen-content {
       position: absolute;
       top: 50%;
@@ -60,9 +75,33 @@
       transform: translate(-50%, -50%);
       text-align: center;
       color: #fff;
+      z-index: 2;
+    }
+
+    .home-fullscreen-content h1 {
+      font-size: 48px;
+      font-weight: 700;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+      margin-bottom: 10px;
+    }
+
+    .home-fullscreen-content p {
+      font-size: 20px;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    /* === RESPONSIVE TEKS === */
+    @media (max-width: 768px) {
+      .home-fullscreen-content h1 {
+        font-size: 34px;
+      }
+      .home-fullscreen-content p {
+        font-size: 16px;
+      }
     }
   </style>
 </head>
+
 <body>
 
   <!-- NAVBAR -->
@@ -78,7 +117,7 @@
 
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
-          
+
           <!-- RACING -->
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="racingDropdown" role="button" data-bs-toggle="dropdown">Rangking</a>
@@ -178,7 +217,12 @@
   </nav>
 
   <!-- FULLSCREEN HOMESCREEN -->
-  <div class="home-fullscreen"></div>
+  <div class="home-fullscreen">
+    <div class="home-fullscreen-content">
+      <h1>Selamat Datang di Dashboard Performance Team</h1>
+      <p>Monitoring Kinerja, KPI, dan Improvement Performance BAN-TAN</p>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
