@@ -3,217 +3,255 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TimeLine Tower - CSV → Gantt (fixed)</title>
+  <title>TimeLine Tower – Gantt Dashboard (Clean)</title>
 
+  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Charts -->
   <script src="https://www.gstatic.com/charts/loader.js"></script>
 
   <style>
-    body { font-family: "Segoe UI", Arial; background:#f7f7f8; padding-top:80px; }
-    .chart-card { max-width:1250px; margin:20px auto; padding:20px; background:#fff; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.05); }
-    #chart_div { height:700px; width:100%; min-height:300px; }
-    .small-muted { color:#6c757d; font-size:0.9rem; }
-    pre.debug { max-height:220px; overflow:auto; background:#f1f1f1; padding:10px; border-radius:6px; display:none; }
+    :root{
+      --bg:#f5f7fb;
+      --card:#ffffff;
+      --muted:#6c757d;
+      --accent:#1e90ff;
+      --success:#28a745;
+      --warning:#ffb74d;
+      --info:#90caf9;
+      --danger:#e74c3c;
+      --radius:12px;
+    }
+
+    body{font-family: "Inter", "Segoe UI", Roboto, Arial; background:var(--bg); margin:0; padding:28px;}
+
+    .topbar{
+      display:flex;
+      gap:16px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:18px;
+    }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .brand img { height:36px; }
+    .brand h1 { font-size:18px; margin:0; letter-spacing:0.2px; }
+
+    .card-main{
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow: 0 8px 24px rgba(22,34,60,0.06);
+    }
+
+    .controls { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .controls .form-control, .controls .form-select { min-width:210px; }
+
+    /* Warnings area (collapsed by default) */
+    .warnings {
+      background: linear-gradient(180deg,#fff8e5,#fff6e0);
+      border:1px solid #ffe7b5;
+      color:#6a4f00;
+      padding:12px 14px;
+      border-radius:8px;
+      margin:12px 0;
+      display:none;
+      max-height:200px;
+      overflow:auto;
+      line-height:1.45;
+      font-size:14px;
+    }
+    .warnings small { display:block; color:var(--muted); margin-top:6px }
+
+    /* Chart card */
+    #chart_card { margin-top:8px; border-radius:10px; overflow:hidden; }
+    #chart_div { width:100%; height:650px; background:#fff; border-radius:8px; padding:12px 18px; box-sizing:border-box; }
+    /* Improve Gantt label readability */
+    .google-visualization-gantt-label { font-weight:600 !important; font-size:13px !important; fill:#1f2937 !important; }
+    .google-visualization-tooltip { font-family: "Inter", Arial; font-size:13px; }
+
+    /* Preview and Debug hidden by default, toggle with button */
+    .preview-wrap { display:none; margin-top:12px; border-radius:8px; overflow:auto; border:1px solid #f0f0f0; background:#fafafa; padding:10px; }
     table.preview { width:100%; border-collapse:collapse; font-size:13px; min-width:1200px; }
-    table.preview th, table.preview td { border:1px solid #eee; padding:6px 8px; text-align:left; white-space:nowrap; }
-    .preview-wrap { overflow:auto; max-height:260px; border:1px solid #f0f0f0; border-radius:6px; padding:6px; background:#fff; }
-    .warning-box { background:#fff3cd; border:1px solid #ffeeba; color:#856404; padding:8px 12px; border-radius:6px; margin-bottom:12px; display:flex; align-items:center; gap:10px; }
-    .warning-close { margin-left:auto; cursor:pointer; }
-    .controls { min-width:460px; }
+    table.preview th, table.preview td { border-bottom:1px solid #eee; padding:6px 8px; text-align:left; white-space:nowrap; }
+    pre.debug { display:none; background:#0f1724; color:#f8fafc; padding:12px; border-radius:8px; margin-top:12px; max-height:220px; overflow:auto; }
+
+    /* Legend */
+    .legend { display:flex; gap:12px; align-items:center; margin-top:8px; }
+    .legend .item { display:flex; gap:8px; align-items:center; font-size:13px; color:var(--muted) }
+    .legend .swatch { width:14px; height:10px; border-radius:3px; display:inline-block; }
+
+    /* Responsive tweaks */
+    @media (max-width:900px){
+      #chart_div { height:520px; }
+      .controls .form-control, .controls .form-select { min-width:150px; }
+    }
   </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
-  <div class="container-fluid">
-    <a class="navbar-brand fw-bold" href="#">PERFORMANCE BAN-TAN</a>
-    <div class="ms-auto small-muted">TimeLine Tower</div>
-  </div>
-</nav>
-
-<div class="chart-card">
-  <div class="d-flex align-items-start justify-content-between mb-3">
-    <div>
-      <h4 class="mb-0">📊 Dashboard Tracking Order – TimeLine Tower</h4>
-      <div class="small-muted">Sumber: Google Sheet (CSV publik)</div>
+  <div class="topbar">
+    <div class="brand">
+      <img src="PERFORMANCE TEAM.png" alt="logo" onerror="this.style.display='none'">
+      <div>
+        <h1>PERFORMANCE BAN-TAN — TimeLine Tower</h1>
+        <small style="color:var(--muted)">Dashboard Tracking Order (Gantt)</small>
+      </div>
     </div>
 
-    <div class="d-flex gap-2 controls">
-      <input id="searchInput" class="form-control" type="text" placeholder="Cari Task, Ticket, Nama Tower...">
-      <select id="statusFilter" class="form-select" style="max-width:180px;">
+    <div class="controls">
+      <input id="searchInput" class="form-control" type="text" placeholder="Cari: Ticket, Site, Teknisi..." aria-label="search">
+      <select id="statusFilter" class="form-select" aria-label="status">
         <option value="all">Semua status</option>
-        <option value="inprogress">&lt;100% (In progress)</option>
+        <option value="inprogress">&lt;100% (In Progress)</option>
         <option value="completed">100% (Completed)</option>
       </select>
-      <button id="btnSearch" class="btn btn-primary">Cari</button>
-      <button id="btnToggleDebug" class="btn btn-outline-secondary">Show debug</button>
+      <button id="btnSearch" class="btn btn-primary">Terapkan</button>
+      <button id="btnToggleWarnings" class="btn btn-outline-secondary">Show Warnings</button>
+      <button id="btnTogglePreview" class="btn btn-outline-secondary">Preview</button>
+      <button id="btnToggleDebug" class="btn btn-outline-secondary">Debug</button>
     </div>
   </div>
 
-  <!-- warnings area (non-blocking) -->
-  <div id="warningsArea" style="display:none; margin-bottom:12px;"></div>
+  <div class="card-main">
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <div class="legend">
+          <div class="item"><span class="swatch" style="background:var(--success)"></span> Completed (100%)</div>
+          <div class="item"><span class="swatch" style="background:var(--warning)"></span> In progress (&lt;100%)</div>
+          <div class="item"><span class="swatch" style="background:var(--info)"></span> No % shown</div>
+        </div>
+        <small class="d-block mt-2" style="color:var(--muted)">Sumber: Google Sheet (CSV publik)</small>
+      </div>
 
-  <div id="chart_div">Memuat chart…</div>
+      <div style="text-align:right">
+        <small class="text-muted">Last update: <span id="lastUpdate">–</span></small>
+      </div>
+    </div>
 
-  <hr/>
-  <div class="mb-2"><strong>Preview data (10 baris pertama)</strong></div>
-  <div id="preview_table" class="preview-wrap"></div>
+    <!-- collapsible warnings -->
+    <div id="warnings" class="warnings" role="status" aria-live="polite"></div>
 
-  <div class="mt-3">
-    <strong>Debug:</strong>
+    <!-- chart -->
+    <div id="chart_card">
+      <div id="chart_div">Memuat Gantt chart…</div>
+    </div>
+
+    <!-- preview & debug -->
+    <div id="preview_wrap" class="preview-wrap mt-3"></div>
     <pre id="debug" class="debug"></pre>
   </div>
-</div>
 
 <script>
-/*
-  Perubahan penting:
-  - Jika row punya start tapi tidak punya end -> gunakan end = start + 1 hari (24h)
-  - Jika row punya end tapi tidak punya start -> gunakan start = end - 1 hari
-  - Jika tidak punya keduanya -> skip
-  - Preview disesuaikan agar scroll horizontal & vertical
-  - Debug disembunyikan default, ada toggle
-*/
-
+/* Improved, styled Gantt dashboard using CSV source */
 const PUB_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRcHZK2xNVK-lRfq_MnNF7MK_4x1iUQJL4ECSf7bBL51Yf7yHdbmGgv5RwtD0RZC6NULyTW7h3-E3o1/pub?gid=1842046587&single=true&output=csv';
-const DEBUG = true;
+const DEBUG_MODE = false;
+
+let headers = [], rows = [], warnings = [];
+let lastCsvText = '';
 
 google.charts.load('current', {'packages':['gantt']});
 google.charts.setOnLoadCallback(init);
 
 document.getElementById('btnSearch').addEventListener('click', applyFilters);
+document.getElementById('btnToggleWarnings').addEventListener('click', toggleWarnings);
+document.getElementById('btnTogglePreview').addEventListener('click', togglePreview);
 document.getElementById('btnToggleDebug').addEventListener('click', toggleDebug);
 
-let headers = [];
-let rows = [];
-let warnings = [];
+function byId(id){ return document.getElementById(id); }
+function logDebug(txt){ if (!DEBUG_MODE) return; byId('debug').textContent += txt + '\n'; console.info(txt); }
+function showWarnings(){ const el = byId('warnings'); if (!warnings.length){ el.style.display='none'; el.innerHTML=''; return;} el.style.display='block'; el.innerHTML = warnings.map(w => `<div>• ${escapeHtml(w)}</div>`).join('') + '<small style="display:block;margin-top:8px;color:var(--muted)">Klik "Show Warnings" untuk sembunyikan.</small>'; }
 
-function logDebug(txt) {
-  if (!DEBUG) return;
-  const el = document.getElementById('debug');
-  el.textContent += txt + '\n';
-  console.info(txt);
-}
-function showMessage(txt) { logDebug('MSG: ' + txt); }
-
-function showWarnings() {
-  const area = document.getElementById('warningsArea');
-  if (!warnings || warnings.length === 0) { area.style.display='none'; area.innerHTML=''; return; }
-  area.style.display='block';
-  area.innerHTML = '<div class="warning-box"><strong>Warning:</strong><div style="margin-left:8px;">' +
-    warnings.map(w => '<div>' + escapeHtml(w) + '</div>').join('') +
-    '</div><div class="warning-close btn btn-sm btn-outline-secondary" onclick="dismissWarnings()">Close</div></div>';
-}
-function dismissWarnings(){ warnings = []; showWarnings(); }
-
-function toggleDebug(){
-  const pre = document.getElementById('debug');
-  if (pre.style.display === 'none' || pre.style.display === '') {
-    pre.style.display = 'block';
-    document.getElementById('btnToggleDebug').textContent = 'Hide debug';
-  } else {
-    pre.style.display = 'none';
-    document.getElementById('btnToggleDebug').textContent = 'Show debug';
-  }
-}
-
-async function init() {
-  showMessage('Memulai ambil CSV: ' + PUB_CSV_URL);
-  try {
-    const csvText = await fetchCsv(PUB_CSV_URL);
-    parseCsv(csvText);
+async function init(){
+  byId('lastUpdate').textContent = new Date().toLocaleString();
+  try{
+    const csv = await fetchCsv(PUB_CSV_URL);
+    lastCsvText = csv;
+    parseCsv(csv);
     renderPreview();
-    buildAndDraw();
-    showMessage('Sukses memuat data. Baris: ' + rows.length);
-  } catch (err) {
-    console.error(err);
-    logDebug('ERROR: ' + err.message);
-    document.getElementById('chart_div').innerHTML = '<div class="small-muted">Gagal memuat data: ' + err.message + '</div>';
+    drawCurrent();
+  } catch(err){
+    byId('chart_div').innerHTML = `<div style="padding:18px;color:#b00020">Gagal load data: ${escapeHtml(err.message)}</div>`;
   }
 }
 
-async function fetchCsv(url) {
+async function fetchCsv(url){
   const r = await fetch(url, {mode:'cors'});
-  if (!r.ok) throw new Error('HTTP ' + r.status + ' saat fetch CSV');
+  if (!r.ok) throw new Error('HTTP ' + r.status);
   return await r.text();
 }
 
-function parseCsv(text) {
-  logDebug('Parsing CSV (chars: ' + text.length + ')');
-
+function parseCsv(text){
+  logDebug('Parsing CSV len=' + text.length);
   const rowsRaw = [];
-  let cur = '';
-  let inQuotes = false;
-  for (let i=0;i<text.length;i++) {
-    const ch = text[i];
-    const next = text[i+1];
-    if (ch === '"') {
-      if (inQuotes && next === '"') { cur += '"'; i++; continue; }
+  let cur = '', inQuotes=false;
+  for (let i=0;i<text.length;i++){
+    const ch = text[i], next = text[i+1];
+    if (ch === '"'){
+      if (inQuotes && next === '"'){ cur += '"'; i++; continue; }
       inQuotes = !inQuotes;
       continue;
     }
-    if (ch === '\n' && !inQuotes) {
-      rowsRaw.push(cur.replace(/\r$/,'')); cur = ''; continue;
-    }
+    if (ch === '\n' && !inQuotes){ rowsRaw.push(cur.replace(/\r$/,'')); cur=''; continue; }
     cur += ch;
   }
-  if (cur !== '') rowsRaw.push(cur);
-
+  if (cur) rowsRaw.push(cur);
   const parsed = rowsRaw.map(r => {
-    const cells = [];
-    let cell = '';
-    let q = false;
+    const cells=[]; let cell='', q=false;
     for (let i=0;i<r.length;i++){
-      const ch = r[i];
-      if (ch === '"') { q = !q; continue; }
-      if (ch === ',' && !q) { cells.push(cell); cell=''; continue; }
+      const ch=r[i];
+      if (ch === '"'){ q=!q; continue; }
+      if (ch === ',' && !q){ cells.push(cell); cell=''; continue; }
       cell += ch;
     }
     cells.push(cell);
-    return cells.map(c => c.trim());
+    return cells.map(c=>c.trim());
   });
-
-  if (parsed.length === 0) throw new Error('CSV kosong');
-  headers = parsed[0].map(h => h || '');
-  rows = parsed.slice(1).filter(r => r.some(c => c !== ''));
-  logDebug('headers: ' + headers.join(' | '));
-  logDebug('rows loaded: ' + rows.length);
+  if (!parsed.length) throw new Error('CSV kosong');
+  headers = parsed[0].map(h=>h||'');
+  rows = parsed.slice(1).filter(r => r.some(c=>c !== ''));
+  logDebug('headers: ' + headers.join('|'));
+  logDebug('rows: ' + rows.length);
 }
 
-function renderPreview() {
-  const container = document.getElementById('preview_table');
-  const sample = rows.slice(0,10);
+function renderPreview(){
+  const container = byId('preview_wrap');
+  // build table HTML but keep hidden by default (toggle visible)
   let html = '<table class="preview"><thead><tr>';
-  for (const h of headers) html += '<th>' + escapeHtml(h) + '</th>';
+  for (const h of headers) html += `<th>${escapeHtml(h)}</th>`;
   html += '</tr></thead><tbody>';
-  for (const r of sample) {
+  for (let i=0;i<Math.min(10, rows.length); i++){
+    const r = rows[i];
     html += '<tr>';
-    for (let i=0;i<headers.length;i++) html += '<td>' + escapeHtml(r[i] || '') + '</td>';
+    for (let j=0;j<headers.length;j++) html += `<td>${escapeHtml(r[j]||'')}</td>`;
     html += '</tr>';
   }
   html += '</tbody></table>';
   container.innerHTML = html;
-  // ensure preview wrapper scrolls; table min-width so horizontal scrollbar appears if needed
 }
 
-function findHeaderIndex(names) {
-  for (const name of names) {
-    const idx = headers.findIndex(h => h && h.toLowerCase().includes(name.toLowerCase()));
+/* Identify columns by keywords; tolerant mapping */
+function findHeaderIndex(names){
+  for (const n of names){
+    const idx = headers.findIndex(h => h && h.toLowerCase().includes(n.toLowerCase()));
     if (idx !== -1) return idx;
   }
   return -1;
 }
 
-function rowsToGanttData(filteredRows) {
+/* Build DataTable for google gantt; fallback dates handled:
+   - if only end present -> start = end -1d
+   - if only start present -> end = start +1d
+*/
+function rowsToGanttData(filteredRows){
   warnings = [];
   const idIdx = findHeaderIndex(['id','no','ticket']);
-  const nameIdx = findHeaderIndex(['task name','task','site_name','site name','ticket','catatan','site','site_name_down','site_name_detect','site_name_down','site_name_detect']);
-  const resourceIdx = findHeaderIndex(['tenant','teknisi','resource','owner','nama_tacc','nama','teknisi']);
-  const startIdx = findHeaderIndex(['start','created_at','created','tanggal','date','created_at']);
-  const endIdx = findHeaderIndex(['end','closed_at','closed','end date','tanggal selesai','closed_at','closed_at']);
-  const pctIdx = findHeaderIndex(['%','percent','progress','status progress','status','status progress','status_progress','status_progress']);
+  const nameIdx = findHeaderIndex(['site_name','site','site_name_down','site_name_detect','site name','ticket','catatan','nama']);
+  const resourceIdx = findHeaderIndex(['tenant','teknisi','nama','nama_tacc','owner']);
+  const startIdx = findHeaderIndex(['created_at','created','start','tanggal','date']);
+  const endIdx = findHeaderIndex(['closed_at','closed','end','finish','tanggal selesai']);
+  const pctIdx = findHeaderIndex(['status progress','status','progress','%','percent']);
 
-  logDebug('mapping idx => id:' + idIdx + ' name:' + nameIdx + ' res:' + resourceIdx + ' start:' + startIdx + ' end:' + endIdx + ' pct:' + pctIdx);
+  logDebug(`map idx id:${idIdx} name:${nameIdx} res:${resourceIdx} start:${startIdx} end:${endIdx} pct:${pctIdx}`);
 
   const data = new google.visualization.DataTable();
   data.addColumn('string','Task ID');
@@ -225,151 +263,198 @@ function rowsToGanttData(filteredRows) {
   data.addColumn('number','Percent Complete');
   data.addColumn('string','Dependencies');
 
-  for (const r of filteredRows) {
+  for (const r of filteredRows){
     const id = idIdx>=0 ? r[idIdx] : '';
-    const name = nameIdx>=0 ? r[nameIdx] : (r[0] || '');
+    const name = nameIdx>=0 ? r[nameIdx] : (r[1]||r[0]||'');
     const resource = resourceIdx>=0 ? r[resourceIdx] : '';
     const startRaw = startIdx>=0 ? r[startIdx] : '';
     const endRaw = endIdx>=0 ? r[endIdx] : '';
     const pctRaw = pctIdx>=0 ? r[pctIdx] : '';
 
-    const startDateRaw = parseDateFlexible(startRaw);
-    const endDateRaw = parseDateFlexible(endRaw);
+    let start = parseDateFlexible(startRaw);
+    let end = parseDateFlexible(endRaw);
 
-    let startDate = startDateRaw;
-    let endDate = endDateRaw;
-
-    // If both absent -> skip row (can't display)
-    if (!startDate && !endDate) {
-      warnings.push('Skipping row (no start/end): ' + (id || name).toString().slice(0,40));
+    if (!start && !end){
+      warnings.push(`Skipping row (no date): ${id || truncate(name,50)}`);
       continue;
     }
+    if (start && !end){ end = new Date(start.getTime() + 24*3600*1000); /* +1 day */ warnings.push(`Missing end for ${id||name} — using start+1d`); }
+    if (!start && end){ start = new Date(end.getTime() - 24*3600*1000); warnings.push(`Missing start for ${id||name} — using end-1d`); }
 
-    // If start present but end missing -> use start + 1 day
-    if (startDate && !endDate) {
-      endDate = new Date(startDate.getTime() + 24*3600*1000);
-      warnings.push('Missing end for task ' + (id || name) + ' — using start+1 day');
-    }
-
-    // If end present but start missing -> use end - 1 day
-    if (!startDate && endDate) {
-      startDate = new Date(endDate.getTime() - 24*3600*1000);
-      warnings.push('Missing start for task ' + (id || name) + ' — using end-1 day');
-    }
-
-    // percent parse
     let pct = 0;
-    if (pctRaw) {
+    if (pctRaw){
       const cleaned = pctRaw.toString().replace('%','').trim();
       const n = Number(cleaned);
       if (!isNaN(n)) pct = Math.max(0, Math.min(100, n));
     }
 
-    data.addRow([
-      id || name,
-      name,
-      resource,
-      startDate || null,
-      endDate || null,
-      null,
-      pct,
-      null
-    ]);
+    data.addRow([ id || name, name, resource, start, end, null, pct, null ]);
   }
 
-  return data;
+  return {data,meta:{idIdx,nameIdx,resourceIdx,startIdx,endIdx,pctIdx}};
 }
 
-function parseDateFlexible(txt) {
-  if (!txt) return null;
-  txt = txt.toString().trim();
-  // try YYYY-MM-DD
-  let m = txt.match(/(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
-  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
-  // try dd/mm/yyyy
-  m = txt.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
-  if (m) return new Date(+m[3], +m[2]-1, +m[1]);
-  // try to extract date-like substring
-  m = txt.match(/(\d{4})-(\d{2})-(\d{2})/);
-  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
-  // fallback: Date parser
-  const d = new Date(txt);
-  if (!isNaN(d.getTime())) return d;
-  return null;
-}
-
-function buildAndDraw(filterText='', statusFilter='all') {
-  if (!rows || rows.length === 0) {
-    document.getElementById('chart_div').innerHTML = '<div class="small-muted">Data kosong</div>';
-    return;
-  }
+function drawCurrent(filterText='', statusFilter='all'){
+  if (!rows || !rows.length){ byId('chart_div').innerHTML = '<div style="padding:18px;color:var(--muted)">Data kosong</div>'; return; }
 
   let filtered = rows.slice();
-
-  if (filterText) {
+  if (filterText){
     const ft = filterText.toLowerCase();
     filtered = filtered.filter(r => r.join(' ').toLowerCase().includes(ft));
   }
 
-  if (statusFilter !== 'all') {
-    const pctIdx = findHeaderIndex(['%','percent','progress','status']);
-    if (pctIdx >= 0) {
-      if (statusFilter === 'inprogress') {
-        filtered = filtered.filter(r => { const v = Number((r[pctIdx]||'').toString().replace('%',''))||0; return v < 100; });
-      } else {
-        filtered = filtered.filter(r => { const v = Number((r[pctIdx]||'').toString().replace('%',''))||0; return v === 100; });
-      }
+  if (statusFilter !== 'all'){
+    const pctIdx = findHeaderIndex(['status progress','status','progress','%','percent']);
+    if (pctIdx >= 0){
+      if (statusFilter === 'inprogress') filtered = filtered.filter(r => (Number((r[pctIdx]||'').toString().replace('%',''))||0) < 100);
+      else filtered = filtered.filter(r => (Number((r[pctIdx]||'').toString().replace('%',''))||0) === 100);
     }
   }
 
-  const data = rowsToGanttData(filtered);
-
-  // show warnings (non-block)
+  const {data, meta} = rowsToGanttData(filtered);
   showWarnings();
 
   const options = {
-    height: Math.max(400, data.getNumberOfRows() * 42),
+    height: Math.max(420, data.getNumberOfRows() * 46),
     gantt: {
-      trackHeight: 34,
-      labelStyle: { fontName: 'Segoe UI', fontSize: 12, color:'#333' },
+      trackHeight: 36,
+      labelStyle: { fontName:'Inter,Segoe UI', fontSize:13, color:'#1f2937' },
       percentEnabled: true,
-      percentStyle: { fill: '#4caf50' }
+      arrow: { angle: 45, width: 2, color: '#6c757d', radius: 0 }
     }
   };
 
-  const chart = new google.visualization.Gantt(document.getElementById('chart_div'));
+  const chartDiv = byId('chart_div');
+  const chart = new google.visualization.Gantt(chartDiv);
   chart.draw(data, options);
 
-  // Color bars based on percent (DOM hack)
+  // color bars by percent (DOM tweak)
   setTimeout(() => {
     try {
-      const svg = document.querySelector('#chart_div svg');
+      const svg = chartDiv.querySelector('svg');
       if (!svg) return;
-      const bars = svg.querySelectorAll('rect.google-visualization-gantt-bar, rect[style*="fill"]');
-      for (let i=0;i<bars.length;i++) {
+      // bars usually have class google-visualization-gantt-bar (but may vary)
+      const bars = svg.querySelectorAll('rect.google-visualization-gantt-bar, rect[role="presentation"]');
+      for (let i=0;i<bars.length;i++){
         const rect = bars[i];
         const rowPct = data.getNumberOfRows() > i ? data.getValue(i,6) : null;
         if (rowPct === null || rowPct === undefined) continue;
-        if (rowPct >= 100) rect.setAttribute('fill', '#4caf50');
-        else if (rowPct > 0) rect.setAttribute('fill', '#ffb74d');
-        else rect.setAttribute('fill', '#90caf9');
+        if (rowPct >= 100) rect.setAttribute('fill', getComputedStyle(document.documentElement).getPropertyValue('--success') || '#28a745');
+        else if (rowPct > 0) rect.setAttribute('fill', getComputedStyle(document.documentElement).getPropertyValue('--warning') || '#ffb74d');
+        else rect.setAttribute('fill', getComputedStyle(document.documentElement).getPropertyValue('--info') || '#90caf9');
+        rect.setAttribute('rx','3'); rect.setAttribute('ry','3');
       }
-    } catch(e) {
-      logDebug('Warning coloring bars: ' + (e && e.message));
+      // make labels nicer: add tooltip title attribute to labels (if present)
+      const labels = svg.querySelectorAll('text');
+      for (const lab of labels){
+        const txt = lab.textContent || '';
+        if (txt) lab.setAttribute('title', txt.trim());
+      }
+    } catch(e){ logDebug('Coloring bars error: ' + e.message); }
+  }, 220);
+}
+
+/* Helpers */
+function parseDateFlexible(txt){
+  if (!txt) return null;
+  txt = txt.toString().trim();
+  let m = txt.match(/(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+  m = txt.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if (m) return new Date(+m[3], +m[2]-1, +m[1]);
+  m = txt.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+  const d = new Date(txt);
+  if (!isNaN(d.getTime())) return d;
+  return null;
+}
+function escapeHtml(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function truncate(s,n){ if(!s) return ''; s = s.toString(); return s.length > n ? s.slice(0,n-1) + '…' : s; }
+
+/* UI toggles */
+function toggleWarnings(){
+  const el = byId('warnings');
+  if (el.style.display === 'none' || el.style.display === ''){ el.style.display='block'; byId('btnToggleWarnings').textContent='Hide Warnings'; }
+  else { el.style.display='none'; byId('btnToggleWarnings').textContent='Show Warnings'; }
+}
+function togglePreview(){
+  const el = byId('preview_wrap');
+  if (el.style.display === 'none' || el.style.display === ''){ el.style.display='block'; byId('btnTogglePreview').textContent='Hide Preview'; }
+  else { el.style.display='none'; byId('btnTogglePreview').textContent='Preview'; }
+}
+function toggleDebug(){
+  const el = byId('debug');
+  if (el.style.display === 'none' || el.style.display === ''){ el.style.display='block'; byId('btnToggleDebug').textContent='Hide Debug'; }
+  else { el.style.display='none'; byId('btnToggleDebug').textContent='Debug'; }
+}
+
+/* Apply filters from UI */
+function applyFilters(){
+  const q = byId('searchInput').value || '';
+  const status = byId('statusFilter').value || 'all';
+  drawCurrent(q, status);
+  // update warnings content and notify
+  byId('lastUpdate').textContent = new Date().toLocaleString();
+}
+
+/* INITIAL draw helper to call drawCurrent and populate warnings */
+function drawCurrent(){
+  drawCurrent = function(){ /* placeholder to be replaced below */ }; // prevent hoisting confusion
+  // initial call below after define drawCurrent correctly (workaround)
+}
+/* Reassign drawCurrent properly and call it */
+drawCurrent = function(q='', status='all'){
+  // if rows not loaded, do nothing
+  if (!rows || rows.length === 0){ byId('chart_div').innerHTML = '<div style="padding:18px;color:var(--muted)">Data kosong</div>'; return; }
+  // filter logic re-used from earlier
+  let filtered = rows.slice();
+  if (q){
+    const ft = q.toLowerCase();
+    filtered = filtered.filter(r => r.join(' ').toLowerCase().includes(ft));
+  }
+  if (status !== 'all'){
+    const pctIdx = findHeaderIndex(['status progress','status','progress','%','percent']);
+    if (pctIdx >= 0){
+      if (status === 'inprogress') filtered = filtered.filter(r => (Number((r[pctIdx]||'').toString().replace('%',''))||0) < 100);
+      else filtered = filtered.filter(r => (Number((r[pctIdx]||'').toString().replace('%',''))||0) === 100);
     }
-  }, 300);
-}
+  }
+  const {data} = rowsToGanttData(filtered);
+  byId('warnings').style.display = warnings.length ? 'none' : 'none'; // default hidden; user can open
+  showWarnings();
+  const options = {
+    height: Math.max(420, data.getNumberOfRows() * 46),
+    gantt: {
+      trackHeight: 36,
+      labelStyle: { fontName:'Inter,Segoe UI', fontSize:13, color:'#1f2937' },
+      percentEnabled: true
+    }
+  };
+  const chart = new google.visualization.Gantt(byId('chart_div'));
+  chart.draw(data, options);
+  // color bars
+  setTimeout(() => {
+    try {
+      const svg = byId('chart_div').querySelector('svg');
+      if (!svg) return;
+      const bars = svg.querySelectorAll('rect.google-visualization-gantt-bar, rect[role="presentation"]');
+      for (let i=0;i<bars.length;i++){
+        const rect = bars[i];
+        const rowPct = data.getNumberOfRows() > i ? data.getValue(i,6) : null;
+        if (rowPct === null || rowPct === undefined) continue;
+        if (rowPct >= 100) rect.setAttribute('fill', getComputedStyle(document.documentElement).getPropertyValue('--success') || '#28a745');
+        else if (rowPct > 0) rect.setAttribute('fill', getComputedStyle(document.documentElement).getPropertyValue('--warning') || '#ffb74d');
+        else rect.setAttribute('fill', getComputedStyle(document.documentElement).getPropertyValue('--info') || '#90caf9');
+        rect.setAttribute('rx','4'); rect.setAttribute('ry','4');
+      }
+    } catch(e){ logDebug('Color error:' + e.message); }
+  }, 240);
+};
 
-function applyFilters() {
-  const txt = document.getElementById('searchInput').value || '';
-  const status = document.getElementById('statusFilter').value;
-  buildAndDraw(txt, status);
-}
-
-function escapeHtml(s) {
-  return (s || '').toString()
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+/* Kick initial UI state */
+byId('warnings').style.display='none';
+byId('preview_wrap').style.display='none';
+byId('debug').style.display='none';
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
