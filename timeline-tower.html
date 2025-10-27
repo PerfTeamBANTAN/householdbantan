@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Tracking Order - TimeLine Tower</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Google Charts -->
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f9f9f9;
+      padding-top: 80px;
+    }
+
+    .navbar {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .chart-container {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      padding: 25px;
+      margin: 20px auto;
+      width: 95%;
+    }
+
+    #chart_div {
+      width: 100%;
+      height: 700px;
+    }
+
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 30px;
+      padding: 20px;
+      color: #777;
+      font-size: 14px;
+    }
+  </style>
+
+  <script>
+    google.charts.load('current', {'packages':['gantt']});
+    google.charts.setOnLoadCallback(drawChart);
+
+    let rawData; // To store fetched data for filtering
+
+    function drawChart(filterText = "") {
+      const query = new google.visualization.Query(
+        'https://docs.google.com/spreadsheets/d/e/2PACX-1vRcHZK2xNVK-lRfq_MnNF7MK_4x1iUQJL4ECSf7bBL51Yf7yHdbmGgv5RwtD0RZC6NULyTW7h3-E3o1/gviz/tq?gid=1842046587&headers=1'
+      );
+      query.send((response) => handleQueryResponse(response, filterText));
+    }
+
+    function handleQueryResponse(response, filterText) {
+      if (response.isError()) {
+        alert('Error fetching data: ' + response.getMessage());
+        return;
+      }
+
+      let dataTable = response.getDataTable();
+      rawData = dataTable;
+
+      // Apply text filter if any
+      if (filterText) {
+        let view = new google.visualization.DataView(dataTable);
+        view.setRows(
+          dataTable.getFilteredRows([{
+            column: 1,
+            test: (value) => value && value.toString().toLowerCase().includes(filterText.toLowerCase())
+          }])
+        );
+        dataTable = view.toDataTable();
+      }
+
+      const chart = new google.visualization.Gantt(document.getElementById('chart_div'));
+      const options = {
+        height: 700,
+        gantt: {
+          trackHeight: 30,
+          barCornerRadius: 4,
+          labelStyle: { fontName: "Segoe UI", fontSize: 12, color: "#333" },
+          percentEnabled: true,
+          arrow: { angle: 50, width: 2, color: '#999', radius: 0 }
+        }
+      };
+
+      chart.draw(dataTable, options);
+    }
+
+    function applyFilter() {
+      const input = document.getElementById('searchInput').value;
+      drawChart(input);
+    }
+  </script>
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand fw-bold" href="#">
+        <img src="PERFORMANCE TEAM.png" alt="logo" style="height: 40px; margin-right: 10px;">
+        PERFORMANCE BAN-TAN
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">KPI 12 PI Laten</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#">Dashboard 12 PI Laten</a></li>
+              <li><a class="dropdown-item" href="#">Ranking PI Laten HSA</a></li>
+              <li><a class="dropdown-item" href="#">Indikator Not ACH</a></li>
+              <li><a class="dropdown-item" href="#">Improvement PI Laten</a></li>
+              <li><a class="dropdown-item active" href="timeline-tower.html">TimeLine Tower</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN DASHBOARD -->
+  <div class="chart-container">
+    <div class="filter-bar">
+      <h4 class="mb-0">📊 Dashboard Tracking Order – TimeLine Tower</h4>
+      <div class="d-flex">
+        <input id="searchInput" class="form-control me-2" type="text" placeholder="Cari Task atau Nama Tower...">
+        <button class="btn btn-primary" onclick="applyFilter()">Cari</button>
+      </div>
+    </div>
+    <div id="chart_div"></div>
+  </div>
+
+  <footer>
+    © 2025 PERFORMANCE BAN-TAN | Dashboard TimeLine Tower
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
