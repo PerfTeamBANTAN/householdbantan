@@ -145,32 +145,75 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.umd.js"></script>
   <script>
-    // Load Gantt tasks dynamically from Google Sheets CSV
-    // Sheet: TT Running, Spreadsheet ID: 1w7JdS-MqdsyrBjRwY8yQFkPXZmrnQlMfzplB54f07ls
-    // CSV export URL format: https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/gviz/tq?tqx=out:csv&sheet=SHEET_NAME
+    Berikut adalah full kode HTML untuk dashboard dengan TimeLine Tower Gantt Chart yang langsung membaca data dari Google Sheet CSV kamu.
+File ini sudah lengkap dengan Bootstrap, Frappe Gantt, dan script parsing yang cocok dengan struktur sheet yang sudah kamu lampirkan.
 
-    const SHEET_ID = '1w7JdS-MqdsyrBjRwY8yQFkPXZmrnQlMfzplB54f07ls';
-    const SHEET_NAME = encodeURIComponent('TT Running');
-    const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
+xml
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Team Performance - TimeLine Tower</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.css" />
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background-color: #f9f9f9; }
+    .navbar-brand { font-weight: bold; font-size: 24px; color: #444; }
+    .section { padding: 24px; }
+    #timeline-tower { background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); padding: 16px; }
+    #gantt { overflow-x: auto; }
+    #gantt-error { display:none; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">PERFORMANCE BAN-TAN</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <!-- Tambah menu lain jika diperlukan -->
+          <li class="nav-item"><a class="nav-link" href="#timeline-tower">TimeLine Tower</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- TimeLine Tower Section -->
+  <section id="timeline-tower" class="section container mt-4">
+    <div class="d-flex align-items-center mb-3">
+      <h4 class="mb-0">TimeLine Tower - Gantt Chart</h4>
+    </div>
+    <div class="row g-3">
+      <div class="col-12">
+        <div id="gantt"></div>
+        <div id="gantt-error" class="text-danger mt-2"></div>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.umd.js"></script>
+  <script>
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRcHZK2xNVK-lRfq_MnNF7MK_4x1iUQJL4ECSf7bBL51Yf7yHdbmGgv5RwtD0RZC6NULyTW7h3-E3o1/pub?gid=1842046587&single=true&output=csv";
 
     function parseCSV(csv) {
       const lines = csv.trim().split(/\r?\n/);
       const headers = lines.shift().split(',').map(h => h.trim());
       return lines.map(line => {
-        // handle commas within quotes
         const cells = [];
         let current = '';
         let inQuotes = false;
         for (let i = 0; i < line.length; i++) {
           const ch = line[i];
-          if (ch === '"') {
-            inQuotes = !inQuotes;
-          } else if (ch === ',' && !inQuotes) {
+          if (ch === '"') inQuotes = !inQuotes;
+          else if (ch === ',' && !inQuotes) {
             cells.push(current);
             current = '';
-          } else {
-            current += ch;
-          }
+          } else current += ch;
         }
         cells.push(current);
         const obj = {};
@@ -182,15 +225,21 @@
     }
 
     function toGanttTasks(rows) {
-      // Expect headers like: id, name, start, end, progress, dependencies
-      return rows.map((r, idx) => ({
-        id: r.id || `task_${idx+1}`,
-        name: r.name || r.fase || r.phase || `Task ${idx+1}`,
-        start: (r.start || r.mulai || r.start_date || '').slice(0, 10),
-        end: (r.end || r.selesai || r.end_date || '').slice(0, 10),
-        progress: Number(r.progress || r.progres || r.status || 0) || 0,
-        dependencies: r.dependencies || r.deps || ''
-      })).filter(t => t.start && t.end);
+      return rows.map((r, idx) => {
+        const status = (r["Status Progress"] || r["status"] || "").trim();
+        const progressMap = { "Selesai": 100, "CLOSED": 100, "TECH CLOSE": 100, "CANCELLED": 0, "Cancel": 0 };
+        let s = (r["created_at"] || "").slice(0, 10);
+        let e = (r["closed_at"] || "").slice(0, 10);
+        if (!e) e = s;
+        return {
+          id: r["id"] || r["no"] || `task_${idx + 1}`,
+          name: r["site_name_down"] || r["site_name_detect"] || r["tt_site"] || `Task ${idx + 1}`,
+          start: s,
+          end: e,
+          progress: progressMap[status] !== undefined ? progressMap[status] : 50,
+          dependencies: ""
+        };
+      }).filter(t => t.name && t.start && t.end);
     }
 
     async function loadAndRenderGantt() {
@@ -201,7 +250,7 @@
         const csv = await res.text();
         const rows = parseCSV(csv);
         const tasks = toGanttTasks(rows);
-        if (!tasks.length) throw new Error('No tasks parsed from sheet.');
+        if (!tasks.length) throw new Error('No tasks parsed from sheet (mapping kolom salah atau data kosong).');
         new Gantt('#gantt', tasks, {
           view_mode: 'Week',
           date_format: 'YYYY-MM-DD',
@@ -209,24 +258,26 @@
           custom_popup_html: task => `
             <div class="p-2">
               <h6 class="mb-1">${task.name}</h6>
-              <div class="text-muted small">${task._start.format('DD MMM YYYY')} - ${task._end.format('DD MMM YYYY')}</div>
+              <div class="text-muted small">${task.start} - ${task.end}</div>
               <div class="mt-1">Progress: <strong>${task.progress}%</strong></div>
             </div>
           `
         });
+        errEl.style.display = "none";
       } catch (e) {
         console.error('Failed to load Gantt data:', e);
         errEl.style.display = 'block';
-        errEl.textContent = 'Gagal memuat data dari Google Sheet: ' + e.message + '. Pastikan sheet dipublikasikan untuk diakses publik.';
+        errEl.textContent = 'Gagal memuat data dari Google Sheet: ' + e.message + '. Pastikan sheet dipublikasikan untuk diakses publik dan data sesuai format.';
       }
     }
 
-    // Auto load on page ready
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', loadAndRenderGantt);
     } else {
       loadAndRenderGantt();
     }
+
   </script>
 </body>
 </html>
+
