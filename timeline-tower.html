@@ -1,161 +1,298 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Tracking Order - TimeLine Tower</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TimeLine Tower - Dashboard (Gantt dari published sheet)</title>
 
-  <!-- Bootstrap 5 -->
+  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- Google Charts -->
+  <!-- Google Charts (Gantt) -->
   <script src="https://www.gstatic.com/charts/loader.js"></script>
 
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f9f9f9;
-      padding-top: 80px;
-    }
-
-    .navbar {
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    .chart-container {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      padding: 25px;
-      margin: 20px auto;
-      width: 95%;
-    }
-
-    #chart_div {
-      width: 100%;
-      height: 700px;
-    }
-
-    .filter-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
-
-    footer {
-      text-align: center;
-      margin-top: 30px;
-      padding: 20px;
-      color: #777;
-      font-size: 14px;
-    }
+    body { font-family: "Segoe UI", Roboto, Arial; background:#f7f7f8; padding-top:72px; }
+    .chart-card { max-width:1200px; margin:20px auto; padding:20px; background:#fff; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.05); }
+    #chart_div { height:700px; width:100%; }
+    .small-muted { color:#6c757d; font-size:0.9rem; }
   </style>
-
-  <script>
-    google.charts.load('current', {'packages':['gantt']});
-    google.charts.setOnLoadCallback(drawChart);
-
-    let rawData; // To store fetched data for filtering
-
-    function drawChart(filterText = "") {
-      const query = new google.visualization.Query(
-        'https://docs.google.com/spreadsheets/d/e/2PACX-1vRcHZK2xNVK-lRfq_MnNF7MK_4x1iUQJL4ECSf7bBL51Yf7yHdbmGgv5RwtD0RZC6NULyTW7h3-E3o1/gviz/tq?gid=1842046587&headers=1'
-      );
-      query.send((response) => handleQueryResponse(response, filterText));
-    }
-
-    function handleQueryResponse(response, filterText) {
-      if (response.isError()) {
-        alert('Error fetching data: ' + response.getMessage());
-        return;
-      }
-
-      let dataTable = response.getDataTable();
-      rawData = dataTable;
-
-      // Apply text filter if any
-      if (filterText) {
-        let view = new google.visualization.DataView(dataTable);
-        view.setRows(
-          dataTable.getFilteredRows([{
-            column: 1,
-            test: (value) => value && value.toString().toLowerCase().includes(filterText.toLowerCase())
-          }])
-        );
-        dataTable = view.toDataTable();
-      }
-
-      const chart = new google.visualization.Gantt(document.getElementById('chart_div'));
-      const options = {
-        height: 700,
-        gantt: {
-          trackHeight: 30,
-          barCornerRadius: 4,
-          labelStyle: { fontName: "Segoe UI", fontSize: 12, color: "#333" },
-          percentEnabled: true,
-          arrow: { angle: 50, width: 2, color: '#999', radius: 0 }
-        }
-      };
-
-      chart.draw(dataTable, options);
-    }
-
-    function applyFilter() {
-      const input = document.getElementById('searchInput').value;
-      drawChart(input);
-    }
-  </script>
 </head>
-
 <body>
 
-  <!-- NAVBAR -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
-    <div class="container-fluid px-4">
-      <a class="navbar-brand fw-bold" href="#">
-        <img src="PERFORMANCE TEAM.png" alt="logo" style="height: 40px; margin-right: 10px;">
-        PERFORMANCE BAN-TAN
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse" id="navbarNav">
+  <!-- NAVBAR (simple, integrate to your existing one if needed) -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="#">PERFORMANCE BAN-TAN</a>
+      <div class="collapse navbar-collapse">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">KPI 12 PI Laten</a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#">Dashboard 12 PI Laten</a></li>
-              <li><a class="dropdown-item" href="#">Ranking PI Laten HSA</a></li>
-              <li><a class="dropdown-item" href="#">Indikator Not ACH</a></li>
-              <li><a class="dropdown-item" href="#">Improvement PI Laten</a></li>
-              <li><a class="dropdown-item active" href="timeline-tower.html">TimeLine Tower</a></li>
-            </ul>
-          </li>
+          <li class="nav-item"><a class="nav-link active" href="#">KPI 12 PI Laten</a></li>
         </ul>
       </div>
     </div>
   </nav>
 
-  <!-- MAIN DASHBOARD -->
-  <div class="chart-container">
-    <div class="filter-bar">
-      <h4 class="mb-0">📊 Dashboard Tracking Order – TimeLine Tower</h4>
-      <div class="d-flex">
-        <input id="searchInput" class="form-control me-2" type="text" placeholder="Cari Task atau Nama Tower...">
-        <button class="btn btn-primary" onclick="applyFilter()">Cari</button>
+  <div class="chart-card">
+    <div class="d-flex align-items-start justify-content-between mb-3">
+      <div>
+        <h4 class="mb-0">📊 Dashboard Tracking Order – TimeLine Tower</h4>
+        <div class="small-muted">Sumber: Google Sheet (published)</div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <input id="searchInput" class="form-control" type="text" placeholder="Cari Task atau Nama Tower...">
+        <select id="statusFilter" class="form-select">
+          <option value="all">Semua status</option>
+          <option value="inprogress">&lt;100% (In progress)</option>
+          <option value="completed">100% (Completed)</option>
+        </select>
+        <button id="btnSearch" class="btn btn-primary">Cari</button>
       </div>
     </div>
-    <div id="chart_div"></div>
+
+    <div id="chart_div">Loading chart…</div>
+    <div id="message" class="mt-3 small-muted"></div>
   </div>
 
-  <footer>
-    © 2025 PERFORMANCE BAN-TAN | Dashboard TimeLine Tower
-  </footer>
+  <script>
+    // --------------------------
+    // CONFIG: ganti URL pubhtml jika perlu
+    // --------------------------
+    const PUBHTML_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRcHZK2xNVK-lRfq_MnNF7MK_4x1iUQJL4ECSf7bBL51Yf7yHdbmGgv5RwtD0RZC6NULyTW7h3-E3o1/pubhtml?gid=1842046587&single=true';
+    // --------------------------
+
+    google.charts.load('current', {'packages':['gantt']});
+    google.charts.setOnLoadCallback(init);
+
+    let rawRows = []; // parsed rows
+    let headers = [];
+
+    document.getElementById('btnSearch').addEventListener('click', applyFilters);
+
+    function showMessage(text, isError = false) {
+      const el = document.getElementById('message');
+      el.textContent = text || '';
+      el.style.color = isError ? '#b00020' : '#6c757d';
+    }
+
+    async function init() {
+      showMessage('Mengambil data dari Google Sheets...');
+
+      try {
+        const html = await fetchPubHtml(PUBHTML_URL);
+        parsePubHtmlTable(html);
+        buildAndDraw(); // initial draw
+        showMessage('');
+      } catch (err) {
+        console.error(err);
+        showMessage('Gagal mengambil atau mem-parse data: ' + err.message, true);
+        document.getElementById('chart_div').innerHTML = '<div class="small-muted">Tidak dapat memuat data. Pastikan sheet sudah di-publish (File → Publish to web) dan URL pubhtml benar serta publik.</div>';
+      }
+    }
+
+    // Fetch the pubhtml page as text
+    async function fetchPubHtml(url) {
+      // Some browsers/hosts may block cross-site requests; but pubhtml is usually accessible.
+      const res = await fetch(url, {mode: 'cors'});
+      if (!res.ok) throw new Error('HTTP ' + res.status + ' fetching pubhtml');
+      return await res.text();
+    }
+
+    // Parse the published HTML and extract the first table (usual layout from Publish to web)
+    function parsePubHtmlTable(htmlText) {
+      const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+
+      // Published sheet often contains tables with class "waffle" or just <table>
+      let table = doc.querySelector('table.waffle') || doc.querySelector('table');
+
+      if (!table) throw new Error('Tidak menemukan tabel pada pubhtml. Pastikan kamu memilih sheet yang benar saat Publish.');
+
+      const trs = Array.from(table.querySelectorAll('tr'));
+      if (trs.length < 2) throw new Error('Tabel kosong atau hanya header.');
+
+      // First row => headers
+      headers = Array.from(trs[0].querySelectorAll('td,th')).map(h => h.textContent.trim());
+
+      // Following rows => data. map to simple array of values
+      rawRows = trs.slice(1).map(tr => {
+        const tds = Array.from(tr.querySelectorAll('td'));
+        return tds.map(td => td.textContent.trim());
+      }).filter(r => r.some(cell => cell !== '')); // drop fully empty rows
+
+      // debug
+      console.info('headers', headers);
+      console.info('rows', rawRows.slice(0,10));
+    }
+
+    // Convert rawRows + headers to DataTable format expected by Google Gantt
+    // Google Gantt expects columns: [string id, string name, string resource, date start, date end, number duration(ms) or null, number percentComplete, string dependencies]
+    function rowsToGanttData(rows) {
+      // Find indexes by expected header names (tolerant)
+      function findHeaderIndex(names) {
+        for (const name of names) {
+          const idx = headers.findIndex(h => h.toLowerCase().includes(name.toLowerCase()));
+          if (idx !== -1) return idx;
+        }
+        return -1;
+      }
+
+      const idxId = findHeaderIndex(['id','task id','taskid']);
+      const idxName = findHeaderIndex(['name','task name','task']);
+      const idxResource = findHeaderIndex(['resource','tower','site','owner']);
+      const idxStart = findHeaderIndex(['start','start date','tanggal mulai']);
+      const idxEnd = findHeaderIndex(['end','end date','finish','tanggal selesai']);
+      const idxDuration = findHeaderIndex(['duration']);
+      const idxPct = findHeaderIndex(['%','percent','progress','percent complete','complete']);
+      const idxDep = findHeaderIndex(['depend','dependency','dependencies']);
+
+      // If start/end missing but duration present, we could compute; prefer start+end.
+      const data = new google.visualization.DataTable();
+      data.addColumn('string', 'Task ID');
+      data.addColumn('string', 'Task Name');
+      data.addColumn('string', 'Resource');
+      data.addColumn('date', 'Start Date');
+      data.addColumn('date', 'End Date');
+      data.addColumn('number', 'Duration'); // milliseconds (optional, set null)
+      data.addColumn('number', 'Percent Complete');
+      data.addColumn('string', 'Dependencies');
+
+      for (const r of rows) {
+        const id = idxId >=0 ? r[idxId] || '' : '';
+        const name = idxName >=0 ? r[idxName] || '' : r[1] || ''; // fallback
+        const resource = idxResource >=0 ? r[idxResource] || '' : '';
+        const startRaw = idxStart>=0 ? r[idxStart] : '';
+        const endRaw = idxEnd>=0 ? r[idxEnd] : '';
+        const durRaw = idxDuration>=0 ? r[idxDuration] : '';
+        const pctRaw = idxPct>=0 ? r[idxPct] : '';
+        const dep = idxDep>=0 ? r[idxDep] || null : null;
+
+        // Parse dates — accept YYYY-MM-DD, DD/MM/YYYY, or human formats
+        const startDate = parseDateFlexible(startRaw);
+        const endDate = parseDateFlexible(endRaw);
+
+        // Percent parse
+        let pct = null;
+        if (pctRaw) {
+          const cleaned = pctRaw.toString().replace('%','').trim();
+          const n = Number(cleaned);
+          if (!Number.isNaN(n)) pct = Math.max(0, Math.min(100, n));
+        }
+
+        // Duration — not used if we have end date. leave null
+        let durationMs = null;
+        if (!endDate && durRaw) {
+          // try parse duration in days (numeric)
+          const d = Number(durRaw);
+          if (!Number.isNaN(d)) durationMs = d * 24 * 3600 * 1000;
+        }
+
+        // If neither start nor end, skip row
+        if (!startDate && !endDate && durationMs === null) {
+          // skip — not enough info
+          continue;
+        }
+
+        data.addRow([
+          id || name,         // id (must be string and unique-ish)
+          name,
+          resource,
+          startDate || null,
+          endDate || null,
+          durationMs,
+          pct !== null ? pct : 0,
+          dep || null
+        ]);
+      }
+
+      return data;
+    }
+
+    // Try parse many date formats; return JS Date or null
+    function parseDateFlexible(txt) {
+      if (!txt) return null;
+      txt = txt.trim();
+
+      // If looks like Excel serialized number? ignore for now.
+
+      // Common ISO YYYY-MM-DD or YYYY/MM/DD
+      const isoMatch = txt.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+      if (isoMatch) {
+        const y = +isoMatch[1], m = +isoMatch[2]-1, d = +isoMatch[3];
+        return new Date(y, m, d);
+      }
+
+      // dd/mm/yyyy or d/m/yyyy
+      const dmy = txt.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+      if (dmy) {
+        const d = +dmy[1], m = +dmy[2]-1, y = +dmy[3];
+        return new Date(y, m, d);
+      }
+
+      // Try Date.parse fallback
+      const dt = new Date(txt);
+      if (!isNaN(dt.getTime())) return dt;
+
+      return null;
+    }
+
+    function buildAndDraw(filterText = '', statusFilter = 'all') {
+      if (!rawRows || rawRows.length === 0) {
+        showMessage('Tidak ada data untuk ditampilkan.', true);
+        return;
+      }
+
+      // Apply text filter and status filter on rawRows
+      let filtered = rawRows.slice();
+
+      if (filterText) {
+        const ft = filterText.toLowerCase();
+        filtered = filtered.filter(row => row.join(' ').toLowerCase().includes(ft));
+      }
+
+      if (statusFilter !== 'all') {
+        // Determine percent column index again (best-effort)
+        const pctIdx = headers.findIndex(h => /%|percent|progress|complete/i.test(h));
+        if (pctIdx >= 0) {
+          if (statusFilter === 'inprogress') {
+            filtered = filtered.filter(r => {
+              const v = r[pctIdx] ? Number(r[pctIdx].toString().replace('%','')) : 0;
+              return v < 100;
+            });
+          } else if (statusFilter === 'completed') {
+            filtered = filtered.filter(r => {
+              const v = r[pctIdx] ? Number(r[pctIdx].toString().replace('%','')) : 0;
+              return v === 100;
+            });
+          }
+        }
+      }
+
+      const data = rowsToGanttData(filtered);
+
+      // Color rows by percent complete using row style role is not supported directly by Gantt,
+      // but we can set options.barColor? Not available per row. Use simple default bars and percent shown.
+      const options = {
+        height: Math.max(400, data.getNumberOfRows() * 40),
+        gantt: {
+          trackHeight: 32,
+          labelStyle: { fontName: 'Segoe UI', fontSize: 12, color:'#333' },
+          percentEnabled: true,
+          percentStyle: { fill: '#4caf50' },
+          criticalPathEnabled: false,
+        }
+      };
+
+      const chart = new google.visualization.Gantt(document.getElementById('chart_div'));
+      chart.draw(data, options);
+    }
+
+    function applyFilters() {
+      const txt = document.getElementById('searchInput').value || '';
+      const status = document.getElementById('statusFilter').value;
+      buildAndDraw(txt, status);
+    }
+  </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
