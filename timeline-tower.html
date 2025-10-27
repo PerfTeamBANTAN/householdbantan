@@ -180,37 +180,100 @@ async function fetchCsv(url){
   return await r.text();
 }
 
-function parseCsv(text){
-  logDebug('Parsing CSV len=' + text.length);
+// ---------- REPLACE EXISTING parseCsv WITH THIS ONE ----------
+function parseCsv(text) {
+  logDebug('Parsing CSV (chars: ' + text.length + ')');
+
+  // 1) Basic RFC4180-ish parser: produce array of rows (strings joined)
   const rowsRaw = [];
-  let cur = '', inQuotes=false;
-  for (let i=0;i<text.length;i++){
-    const ch = text[i], next = text[i+1];
-    if (ch === '"'){
-      if (inQuotes && next === '"'){ cur += '"'; i++; continue; }
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const next = text[i+1];
+    if (ch === '"') {
+      if (inQuotes && next === '"') { cur += '"'; i++; continue; } // escaped quote
       inQuotes = !inQuotes;
       continue;
     }
-    if (ch === '\n' && !inQuotes){ rowsRaw.push(cur.replace(/\r$/,'')); cur=''; continue; }
+    if (ch === '\n' && !inQuotes) {
+      rowsRaw.push(cur.replace(/\r$/,'')); cur = ''; continue;
+    }
     cur += ch;
   }
-  if (cur) rowsRaw.push(cur);
+  if (cur !== '') rowsRaw.push(cur);
+
+  // 2) Split each logical row by commas, handling quoted fields (again)
   const parsed = rowsRaw.map(r => {
-    const cells=[]; let cell='', q=false;
-    for (let i=0;i<r.length;i++){
-      const ch=r[i];
-      if (ch === '"'){ q=!q; continue; }
-      if (ch === ',' && !q){ cells.push(cell); cell=''; continue; }
+    const cells = [];
+    let cell = '';
+    let q = false;
+    for (let i = 0; i < r.length; i++) {
+      const ch = r[i];
+      if (ch === '"' ) { q = !q; continue; }
+      if (ch === ',' && !q) { cells.push(cell); cell = ''; continue; }
       cell += ch;
     }
     cells.push(cell);
-    return cells.map(c=>c.trim());
+    return cells.map(c => c.trim());
   });
-  if (!parsed.length) throw new Error('CSV kosong');
-  headers = parsed[0].map(h=>h||'');
-  rows = parsed.slice(1).filter(r => r.some(c=>c !== ''));
-  logDebug('headers: ' + headers.join('|'));
-  logDebug('rows: ' + rows.length);
+
+  if (parsed.length === 0) throw new Error('CSV kosong');
+
+  // 3) Find the mode (most common) column count among all parsed rows
+  const colCountFreq = {};
+  parsed.forEach(r => {
+    const n = r.length;
+    colCountFreq[n] = (colCountFreq[n] || 0) + 1;
+  });
+  let modeCols = null;
+  let maxFreq = 0;
+  for (const k in colCountFreq) {
+    if (colCountFreq[k] > maxFreq) { maxFreq = colCountFreq[k]; modeCols = Number(k); }
+  }
+  logDebug('Detected mode column count = ' + modeCols);
+
+  // 4) If the first row length !== modeCols, find the first row that matches modeCols and use it as header.
+  let headerRowIndex = 0;
+  if (parsed[0].length !== modeCols) {
+    const foundIdx = parsed.findIndex((r, idx) => r.length === modeCols);
+    if (foundIdx !== -1) {
+      headerRowIndex = foundIdx;
+      logDebug('First row columns ('+parsed[0].length+') != modeCols. Using row ' + foundIdx + ' as header.');
+    } else {
+      // fallback: if no row matches mode, still use first row but we'll try to normalize sizes later
+      headerRowIndex = 0;
+      logDebug('No row matched modeCols; using first row as header (fallback).');
+    }
+  } else {
+    headerRowIndex = 0;
+  }
+
+  // 5) Assign headers and data rows
+  headers = parsed[headerRowIndex].map(h => h || '');
+
+  // data rows are rows after headerRowIndex
+  rows = parsed.slice(headerRowIndex + 1).filter(r => r.some(cell => cell !== ''));
+
+  // 6) If some data rows have different column counts, pad or trim them to modeCols to keep alignment
+  rows = rows.map(r => {
+    if (r.length < modeCols) {
+      // pad with empty strings
+      return r.concat(Array(modeCols - r.length).fill(''));
+    } else if (r.length > modeCols) {
+      // trim extra columns (if they exist at the end)
+      return r.slice(0, modeCols);
+    }
+    return r;
+  });
+
+  // 7) If header length doesn't equal modeCols, adjust header similarly (pad/trim)
+  if (headers.length < modeCols) headers = headers.concat(Array(modeCols - headers.length).fill(''));
+  else if (headers.length > modeCols) headers = headers.slice(0, modeCols);
+
+  logDebug('Final header count = ' + headers.length + ' | rows loaded = ' + rows.length);
+  logDebug('headers: ' + headers.join(' | '));
+  logDebug('first row sample: ' + JSON.stringify(rows.slice(0,4)));
 }
 
 function renderPreview(){
@@ -460,3 +523,4 @@ byId('debug').style.display='none';
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
