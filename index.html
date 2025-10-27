@@ -21,13 +21,31 @@
     }
 
     .nav-link {
-      color: #333;
+      color: #333 !important;
+      transition: all 0.3s ease;
+      padding: 8px 15px;
+      border-radius: 6px;
     }
 
-    .dropdown-menu a {
+    /* Efek hover di menu utama */
+    .nav-link:hover {
+      background-color: #f0f0f0;
+      color: #007bff !important;
+    }
+
+    /* Dropdown item hover */
+    .dropdown-menu a.dropdown-item {
       font-size: 14px;
+      color: #333;
+      transition: all 0.2s ease;
     }
 
+    .dropdown-menu a.dropdown-item:hover {
+      background-color: #007bff;
+      color: white;
+    }
+
+    /* Submenu */
     .dropdown-submenu {
       position: relative;
     }
@@ -46,9 +64,9 @@
     /* === FULLSCREEN IMAGE CLEAN === */
     .home-fullscreen {
       width: 100%;
-      height: calc(100vh - 70px); /* tinggi layar dikurangi navbar */
+      height: calc(100vh - 70px);
       background: url('homescreen.jpg') center center / contain no-repeat; 
-      background-color: #ffffff; /* nuansa putih bersih */
+      background-color: #ffffff;
       image-rendering: -webkit-optimize-contrast;
       image-rendering: crisp-edges;
       image-rendering: high-quality;
@@ -57,10 +75,9 @@
       filter: brightness(1.05) contrast(1.05);
     }
 
-    /* Jika gambar tidak memenuhi layar (karena 'contain'), beri warna putih */
     @media (max-width: 768px) {
       .home-fullscreen {
-        background-size: cover; /* agar tetap proporsional di HP */
+        background-size: cover;
         background-attachment: scroll;
       }
     }
