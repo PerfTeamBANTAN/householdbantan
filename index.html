@@ -10,7 +10,7 @@
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
-      background-color: #ffffff;
+      background-color: #fff;
     }
 
     /* === NAVBAR === */
@@ -43,60 +43,25 @@
       display: block;
     }
 
-    /* === FULLSCREEN HOME IMAGE === */
+    /* === FULLSCREEN IMAGE CLEAN === */
     .home-fullscreen {
-      position: relative;
       width: 100%;
-      height: calc(100vh - 70px); /* Sesuaikan tinggi dengan navbar */
-      background: url('homescreen.jpg') center center / cover no-repeat;
-      background-attachment: fixed; /* Biar gambar tajam dan tidak ikut scroll */
-      background-color: #ffffff;
-      filter: brightness(1.1) contrast(1.05); /* Lebih terang dan jernih */
+      height: calc(100vh - 70px); /* tinggi layar dikurangi navbar */
+      background: url('homescreen.jpg') center center / contain no-repeat; 
+      background-color: #ffffff; /* nuansa putih bersih */
       image-rendering: -webkit-optimize-contrast;
       image-rendering: crisp-edges;
       image-rendering: high-quality;
       -webkit-backface-visibility: hidden;
-      overflow: hidden;
+      background-attachment: fixed;
+      filter: brightness(1.05) contrast(1.05);
     }
 
-    /* === OVERLAY LEMBUT UNTUK KONTRAS === */
-    .home-fullscreen::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.25); /* bisa ubah opacity 0.25-0.35 */
-    }
-
-    /* === TEKS DI TENGAH GAMBAR === */
-    .home-fullscreen-content {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      color: #fff;
-      z-index: 2;
-    }
-
-    .home-fullscreen-content h1 {
-      font-size: 48px;
-      font-weight: 700;
-      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-      margin-bottom: 10px;
-    }
-
-    .home-fullscreen-content p {
-      font-size: 20px;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-    }
-
-    /* === RESPONSIVE TEKS === */
+    /* Jika gambar tidak memenuhi layar (karena 'contain'), beri warna putih */
     @media (max-width: 768px) {
-      .home-fullscreen-content h1 {
-        font-size: 34px;
-      }
-      .home-fullscreen-content p {
-        font-size: 16px;
+      .home-fullscreen {
+        background-size: cover; /* agar tetap proporsional di HP */
+        background-attachment: scroll;
       }
     }
   </style>
@@ -118,7 +83,7 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
 
-          <!-- RACING -->
+          <!-- RANGKING -->
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="racingDropdown" role="button" data-bs-toggle="dropdown">Rangking</a>
             <ul class="dropdown-menu">
@@ -149,23 +114,6 @@
               <li><a class="dropdown-item" href="#">Ranking B2C Mitra</a></li>
               <li><a class="dropdown-item" href="#">Indikator Not ACH</a></li>
               <li><a class="dropdown-item" href="#">Improvement B2C</a></li>
-              <li class="dropdown-submenu dropend">
-                <a class="dropdown-item dropdown-toggle" href="#">Detail Indikator</a>
-                <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="#">Assurance guarantee All</a></li>
-                  <li><a class="dropdown-item" href="#">Service Availability (All Teknis)</a></li>
-                  <li><a class="dropdown-item" href="#">Q Gangguan (All Teknis)</a></li>
-                  <li><a class="dropdown-item" href="#">TTR COMPLYER</a></li>
-                  <li><a class="dropdown-item" href="#">Tangible</a></li>
-                  <li><a class="dropdown-item" href="#">Dismantling ex CT0 (Quantity)</a></li>
-                  <li><a class="dropdown-item" href="#">VALINS</a></li>
-                  <li><a class="dropdown-item" href="#">Validasi Tiang</a></li>
-                  <li><a class="dropdown-item" href="#">SQM</a></li>
-                  <li><a class="dropdown-item" href="#">SCC</a></li>
-                  <li><a class="dropdown-item" href="#">Underspec dan Infracare</a></li>
-                  <li><a class="dropdown-item" href="#">Ext Audit</a></li>
-                </ul>
-              </li>
             </ul>
           </li>
 
@@ -173,14 +121,7 @@
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="kpiB2BDropdown" role="button" data-bs-toggle="dropdown">KPI Non Sektor B2B</a>
             <ul class="dropdown-menu">
-              <li class="dropdown-submenu dropend">
-                <a class="dropdown-item dropdown-toggle" href="#">HSI</a>
-                <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="#">Q HSI</a></li>
-                  <li><a class="dropdown-item" href="#">ASGAR HSI</a></li>
-                  <li><a class="dropdown-item" href="#">TTR HSI</a></li>
-                </ul>
-              </li>
+              <li><a class="dropdown-item" href="#">HSI</a></li>
               <li><a class="dropdown-item" href="#">DATIN</a></li>
               <li><a class="dropdown-item" href="#">WIFI</a></li>
               <li><a class="dropdown-item" href="#">OLO</a></li>
@@ -216,13 +157,8 @@
     </div>
   </nav>
 
-  <!-- FULLSCREEN HOMESCREEN -->
-  <div class="home-fullscreen">
-    <div class="home-fullscreen-content">
-      <h1>Selamat Datang di Dashboard Performance Team</h1>
-      <p>Monitoring Kinerja, KPI, dan Improvement Performance BAN-TAN</p>
-    </div>
-  </div>
+  <!-- CLEAN FULLSCREEN IMAGE -->
+  <div class="home-fullscreen"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
