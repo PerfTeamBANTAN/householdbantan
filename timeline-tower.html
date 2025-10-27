@@ -3,17 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TimeLine Tower - CSV -> Gantt</title>
+  <title>TimeLine Tower - CSV → Gantt (Final)</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://www.gstatic.com/charts/loader.js"></script>
 
   <style>
-    body { font-family: "Segoe UI", Arial; background:#f7f7f8; padding-top:72px; }
-    .chart-card { max-width:1200px; margin:20px auto; padding:20px; background:#fff; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.05); }
+    body { font-family: "Segoe UI", Arial; background:#f7f7f8; padding-top:80px; }
+    .chart-card { max-width:1250px; margin:20px auto; padding:20px; background:#fff; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.05); }
     #chart_div { height:700px; width:100%; }
     .small-muted { color:#6c757d; font-size:0.9rem; }
-    pre.debug { max-height:140px; overflow:auto; background:#f1f1f1; padding:10px; border-radius:6px; }
+    pre.debug { max-height:160px; overflow:auto; background:#f1f1f1; padding:10px; border-radius:6px; }
+    table.preview { width:100%; border-collapse:collapse; font-size:13px; }
+    table.preview th, table.preview td { border:1px solid #eee; padding:6px 8px; text-align:left; }
+    .legend { display:flex; gap:10px; align-items:center; margin-top:8px; }
+    .legend .box { width:16px; height:10px; display:inline-block; border-radius:2px; }
   </style>
 </head>
 <body>
@@ -21,19 +25,25 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
   <div class="container-fluid">
     <a class="navbar-brand fw-bold" href="#">PERFORMANCE BAN-TAN</a>
+    <div class="ms-auto small-muted">TimeLine Tower</div>
   </div>
 </nav>
 
 <div class="chart-card">
   <div class="d-flex align-items-start justify-content-between mb-3">
     <div>
-      <h4 class="mb-0">📊 Dashboard Tracking Order – TimeLine Tower (CSV)</h4>
-      <div class="small-muted">Sumber: Google Sheet (published → CSV)</div>
+      <h4 class="mb-0">📊 Dashboard Tracking Order – TimeLine Tower</h4>
+      <div class="small-muted">Sumber: Google Sheet (CSV publik)</div>
+      <div class="legend mt-2">
+        <div><span class="box" style="background:#4caf50"></span> Completed (≥100%)</div>
+        <div><span class="box" style="background:#ffb74d"></span> In progress (&lt;100%)</div>
+        <div><span class="box" style="background:#90caf9"></span> No progress shown</div>
+      </div>
     </div>
 
-    <div class="d-flex gap-2">
-      <input id="searchInput" class="form-control" type="text" placeholder="Cari Task atau Nama Tower...">
-      <select id="statusFilter" class="form-select">
+    <div class="d-flex gap-2" style="min-width:420px;">
+      <input id="searchInput" class="form-control" type="text" placeholder="Cari Task, Ticket, Nama Tower...">
+      <select id="statusFilter" class="form-select" style="max-width:180px;">
         <option value="all">Semua status</option>
         <option value="inprogress">&lt;100% (In progress)</option>
         <option value="completed">100% (Completed)</option>
@@ -42,11 +52,13 @@
     </div>
   </div>
 
-  <div id="chart_div">Loading chart…</div>
-  <div id="message" class="mt-3 small-muted"></div>
+  <div id="chart_div">Memuat chart…</div>
 
-  <hr />
-  <div>
+  <hr/>
+  <div class="mb-2"><strong>Preview data (10 baris pertama)</strong></div>
+  <div id="preview_table" style="overflow:auto; max-height:260px;"></div>
+
+  <div class="mt-3">
     <strong>Debug:</strong>
     <pre id="debug" class="debug"></pre>
   </div>
@@ -54,106 +66,86 @@
 
 <script>
 /*
-  Cara kerja:
-  - Ambil CSV publik dari Google Sheets (PUB_CSV_URL)
-  - Parse CSV ke array rows
-  - Temukan index kolom secara toleran
-  - Convert -> google.visualization.DataTable dan draw gantt
+ Final version using the CSV URL you provided.
+ - Make sure to open file via http(s) (not file://) to allow fetch.
+ - If you want to change CSV source, update PUB_CSV_URL below.
 */
 
-// === CONFIG ===
-// Gunakan URL CSV publik (format: /pub?gid=...&single=true&output=csv)
+// ===== CONFIG: CSV URL (you already provided this) =====
 const PUB_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRcHZK2xNVK-lRfq_MnNF7MK_4x1iUQJL4ECSf7bBL51Yf7yHdbmGgv5RwtD0RZC6NULyTW7h3-E3o1/pub?gid=1842046587&single=true&output=csv';
-// Jika link tidak bekerja, buka halaman Publish to web lalu dapatkan link CSV (pub?output=csv)
 const DEBUG = true;
-// ==============
+// ======================================================
 
 google.charts.load('current', {'packages':['gantt']});
 google.charts.setOnLoadCallback(init);
 
 document.getElementById('btnSearch').addEventListener('click', applyFilters);
 
-function showMessage(text, isError=false) {
-  const el = document.getElementById('message');
-  el.textContent = text || '';
-  el.style.color = isError ? '#b00020' : '#6c757d';
-  if (DEBUG) logDebug('MSG: ' + text);
-}
-
 function logDebug(txt) {
   if (!DEBUG) return;
-  const d = document.getElementById('debug');
-  d.textContent += txt + "\n";
+  const el = document.getElementById('debug');
+  el.textContent += txt + '\n';
+  console.info(txt);
+}
+
+function showMessage(txt) {
+  logDebug('MSG: ' + txt);
 }
 
 let headers = [];
-let rows = []; // array of arrays
+let rows = [];
 
 async function init() {
-  showMessage('Mengambil CSV dari Google Sheets...');
-  logDebug('CSV URL: ' + PUB_CSV_URL);
+  showMessage('Memulai ambil CSV: ' + PUB_CSV_URL);
   try {
     const csvText = await fetchCsv(PUB_CSV_URL);
     parseCsv(csvText);
-    showMessage('Data berhasil diambil. Baris: ' + rows.length);
+    renderPreview();
     buildAndDraw();
+    showMessage('Sukses memuat data. Baris: ' + rows.length);
   } catch (err) {
     console.error(err);
-    showMessage('Gagal mengambil data: ' + err.message, true);
+    logDebug('ERROR: ' + err.message);
+    document.getElementById('chart_div').innerHTML = '<div class="small-muted">Gagal memuat data: ' + err.message + '</div>';
   }
 }
 
 async function fetchCsv(url) {
-  // CORS: pub CSV seharusnya bisa di-fetch dari browser
-  const res = await fetch(url, {mode: 'cors'});
-  if (!res.ok) throw new Error('HTTP ' + res.status + ' saat fetch CSV');
-  return await res.text();
+  const r = await fetch(url, {mode:'cors'});
+  if (!r.ok) throw new Error('HTTP ' + r.status + ' saat fetch CSV');
+  return await r.text();
 }
 
-// CSV parser sederhana namun robust terhadap kutipan
+// Robust CSV parser (handles quoted fields with newlines)
 function parseCsv(text) {
-  logDebug('Parsing CSV, panjang: ' + text.length);
-  // Split into rows but handle quoted newlines
+  logDebug('Parsing CSV (chars: ' + text.length + ')');
+
   const rowsRaw = [];
   let cur = '';
   let inQuotes = false;
-  for (let i = 0; i < text.length; i++) {
+  for (let i=0;i<text.length;i++) {
     const ch = text[i];
     const next = text[i+1];
     if (ch === '"') {
-      if (inQuotes && next === '"') { // escaped quote
-        cur += '"';
-        i++;
-        continue;
-      }
+      if (inQuotes && next === '"') { cur += '"'; i++; continue; } // escaped quote
       inQuotes = !inQuotes;
       continue;
     }
     if (ch === '\n' && !inQuotes) {
-      rowsRaw.push(cur.replace(/\r$/,'')); // remove trailing \r
-      cur = '';
-      continue;
+      rowsRaw.push(cur.replace(/\r$/,'')); cur = ''; continue;
     }
     cur += ch;
   }
-  if (cur.length) rowsRaw.push(cur);
+  if (cur !== '') rowsRaw.push(cur);
 
-  // split each row by commas (handling quoted fields already removed)
   const parsed = rowsRaw.map(r => {
     const cells = [];
     let cell = '';
     let q = false;
-    for (let i = 0; i < r.length; i++) {
+    for (let i=0;i<r.length;i++){
       const ch = r[i];
-      if (ch === '"' ) {
-        q = !q; // toggle — ideally quotes removed earlier, but keep tolerance
-        continue;
-      }
-      if (ch === ',' && !q) {
-        cells.push(cell);
-        cell = '';
-        continue;
-      }
+      if (ch === '"') { q = !q; continue; }
+      if (ch === ',' && !q) { cells.push(cell); cell=''; continue; }
       cell += ch;
     }
     cells.push(cell);
@@ -161,30 +153,47 @@ function parseCsv(text) {
   });
 
   if (parsed.length === 0) throw new Error('CSV kosong');
-  headers = parsed[0];
-  rows = parsed.slice(1).filter(r => r.some(cell=>cell !== ''));
+  headers = parsed[0].map(h => h || '');
+  rows = parsed.slice(1).filter(r => r.some(c => c !== ''));
   logDebug('headers: ' + headers.join(' | '));
-  logDebug('first rows sample: ' + JSON.stringify(rows.slice(0,5)));
+  logDebug('rows loaded: ' + rows.length);
 }
 
-// Map columns tolerant
+// Render preview table of first 10 rows so you can check mapping
+function renderPreview() {
+  const container = document.getElementById('preview_table');
+  const sample = rows.slice(0,10);
+  let html = '<table class="preview"><thead><tr>';
+  for (const h of headers) html += '<th>' + escapeHtml(h) + '</th>';
+  html += '</tr></thead><tbody>';
+  for (const r of sample) {
+    html += '<tr>';
+    for (let i=0;i<headers.length;i++) html += '<td>' + escapeHtml(r[i] || '') + '</td>';
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+// Find header index by tolerant keywords
 function findHeaderIndex(names) {
-  for (const n of names) {
-    const idx = headers.findIndex(h => h && h.toLowerCase().includes(n.toLowerCase()));
+  for (const name of names) {
+    const idx = headers.findIndex(h => h && h.toLowerCase().includes(name.toLowerCase()));
     if (idx !== -1) return idx;
   }
   return -1;
 }
 
+// Convert filtered rows -> google DataTable for Gantt
 function rowsToGanttData(filteredRows) {
   const idIdx = findHeaderIndex(['id','no','ticket']);
-  const nameIdx = findHeaderIndex(['task name','task','site_name','site name','ticket','catatan','site']);
-  const resourceIdx = findHeaderIndex(['tenant','teknisi','resource','owner','nama_tacc','nama']);
-  const startIdx = findHeaderIndex(['start','created_at','created','tanggal','date']);
+  const nameIdx = findHeaderIndex(['task name','task','site_name','site name','ticket','catatan','site','site_name_down','site_name_down']);
+  const resourceIdx = findHeaderIndex(['tenant','teknisi','resource','owner','nama_tacc','nama','teknisi']);
+  const startIdx = findHeaderIndex(['start','created_at','created','tanggal','date','created_at']);
   const endIdx = findHeaderIndex(['end','closed_at','closed','end date','tanggal selesai','closed_at']);
-  const pctIdx = findHeaderIndex(['%','percent','progress','status progress','status']);
+  const pctIdx = findHeaderIndex(['%','percent','progress','status progress','status','status progress','status_progress']);
 
-  logDebug('idx mapping: id='+idIdx+', name='+nameIdx+', res='+resourceIdx+', start='+startIdx+', end='+endIdx+', pct='+pctIdx);
+  logDebug('mapping idx => id:' + idIdx + ' name:' + nameIdx + ' res:' + resourceIdx + ' start:' + startIdx + ' end:' + endIdx + ' pct:' + pctIdx);
 
   const data = new google.visualization.DataTable();
   data.addColumn('string','Task ID');
@@ -198,7 +207,7 @@ function rowsToGanttData(filteredRows) {
 
   for (const r of filteredRows) {
     const id = idIdx>=0 ? r[idIdx] : '';
-    const name = nameIdx>=0 ? r[nameIdx] : (r[0]||'');
+    const name = nameIdx>=0 ? r[nameIdx] : (r[0] || '');
     const resource = resourceIdx>=0 ? r[resourceIdx] : '';
     const startRaw = startIdx>=0 ? r[startIdx] : '';
     const endRaw = endIdx>=0 ? r[endIdx] : '';
@@ -207,6 +216,7 @@ function rowsToGanttData(filteredRows) {
     const startDate = parseDateFlexible(startRaw);
     const endDate = parseDateFlexible(endRaw);
 
+    // percent parse
     let pct = 0;
     if (pctRaw) {
       const cleaned = pctRaw.toString().replace('%','').trim();
@@ -214,7 +224,7 @@ function rowsToGanttData(filteredRows) {
       if (!isNaN(n)) pct = Math.max(0, Math.min(100, n));
     }
 
-    // If start & end both missing, skip row
+    // skip if no date info
     if (!startDate && !endDate) continue;
 
     data.addRow([
@@ -228,10 +238,11 @@ function rowsToGanttData(filteredRows) {
       null
     ]);
   }
+
   return data;
 }
 
-// flexible date parse
+// flexible parser for common date formats in your sheet
 function parseDateFlexible(txt) {
   if (!txt) return null;
   txt = txt.toString().trim();
@@ -241,20 +252,21 @@ function parseDateFlexible(txt) {
   // try dd/mm/yyyy
   m = txt.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
   if (m) return new Date(+m[3], +m[2]-1, +m[1]);
-  // try extract first YYYY-MM-DD in string
+  // try to extract date-like substring
   m = txt.match(/(\d{4})-(\d{2})-(\d{2})/);
   if (m) return new Date(+m[1], +m[2]-1, +m[3]);
-  // fallback Date parse
+  // fallback: Date parser
   const d = new Date(txt);
   if (!isNaN(d.getTime())) return d;
   return null;
 }
 
-function buildAndDraw(filterText = '', statusFilter = 'all') {
+function buildAndDraw(filterText='', statusFilter='all') {
   if (!rows || rows.length === 0) {
-    showMessage('Tidak ada data untuk ditampilkan', true);
+    document.getElementById('chart_div').innerHTML = '<div class="small-muted">Data kosong</div>';
     return;
   }
+
   let filtered = rows.slice();
 
   if (filterText) {
@@ -266,39 +278,62 @@ function buildAndDraw(filterText = '', statusFilter = 'all') {
     const pctIdx = findHeaderIndex(['%','percent','progress','status']);
     if (pctIdx >= 0) {
       if (statusFilter === 'inprogress') {
-        filtered = filtered.filter(r => {
-          const v = Number((r[pctIdx]||'').toString().replace('%','')) || 0;
-          return v < 100;
-        });
+        filtered = filtered.filter(r => { const v = Number((r[pctIdx]||'').toString().replace('%',''))||0; return v < 100; });
       } else {
-        filtered = filtered.filter(r => {
-          const v = Number((r[pctIdx]||'').toString().replace('%','')) || 0;
-          return v === 100;
-        });
+        filtered = filtered.filter(r => { const v = Number((r[pctIdx]||'').toString().replace('%',''))||0; return v === 100; });
       }
     }
   }
 
-  const dataTable = rowsToGanttData(filtered);
+  const data = rowsToGanttData(filtered);
 
   const options = {
-    height: Math.max(400, dataTable.getNumberOfRows() * 40),
+    height: Math.max(400, data.getNumberOfRows() * 42),
     gantt: {
-      trackHeight: 32,
+      trackHeight: 34,
       labelStyle: { fontName: 'Segoe UI', fontSize: 12, color:'#333' },
-      percentEnabled: true
+      percentEnabled: true,
+      percentStyle: { fill: '#4caf50' }
     }
   };
 
   const chart = new google.visualization.Gantt(document.getElementById('chart_div'));
-  chart.draw(dataTable, options);
-  showMessage('Chart digambar. Menampilkan ' + dataTable.getNumberOfRows() + ' baris.');
+  chart.draw(data, options);
+
+  // After drawing, color bars based on percent (DOM hack).
+  // Google Gantt uses <rect> inside an SVG; we color by reading percent values and mapping order.
+  setTimeout(() => {
+    try {
+      const svg = document.querySelector('#chart_div svg');
+      if (!svg) return;
+      const rowsEls = svg.querySelectorAll('g[row-index]'); // sometimes there are groups with row-index attribute
+      // Fallback: select bars by rect with class 'google-visualization-gantt-bar'
+      const bars = svg.querySelectorAll('rect.google-visualization-gantt-bar, rect[style*="fill"]');
+      // We'll iterate rows in order and color by percent
+      for (let i=0;i<bars.length;i++) {
+        const rect = bars[i];
+        const rowPct = data.getNumberOfRows() > i ? data.getValue(i,6) : null;
+        if (rowPct === null || rowPct === undefined) continue;
+        if (rowPct >= 100) rect.setAttribute('fill', '#4caf50');       // green
+        else if (rowPct > 0) rect.setAttribute('fill', '#ffb74d');    // orange
+        else rect.setAttribute('fill', '#90caf9');                    // blue
+      }
+    } catch(e) {
+      logDebug('Warning coloring bars: ' + (e && e.message));
+    }
+  }, 300);
 }
 
 function applyFilters() {
   const txt = document.getElementById('searchInput').value || '';
   const status = document.getElementById('statusFilter').value;
   buildAndDraw(txt, status);
+}
+
+// small helper
+function escapeHtml(s) {
+  return (s || '').toString()
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 </script>
 
