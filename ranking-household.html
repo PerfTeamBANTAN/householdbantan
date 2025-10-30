@@ -167,7 +167,7 @@
       <img src="PERFORMANCE TEAM.png" alt="" style="height:42px;">
       <div>
         <div class="page-title">Ranking Household — RANKING HSA</div>
-        <div class="small-note">Perbaikan: INDEX rowspan(2), baris group header hanya untuk KPI B2C/KPI B2B/POINT RANKING, teks hitam->putih.</div>
+        <div class="small-note">Perbaikan: KPI 12 PI LATEN muncul di merge A:B (hitam/putih)</div>
       </div>
     </div>
 
@@ -183,7 +183,6 @@
   </main>
 
   <script>
-    // CONFIG (sheet harus dipublikasikan)
     const SPREADSHEET_ID = '1nJ5FQ4A9sd4FsxRXuAMr42eHalnd0N2Rm7dK_05Filg';
     const SHEET_NAME = 'RANKING HSA';
     const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json`;
@@ -200,9 +199,7 @@
       'B2B Quality of Service Assurance'
     ].map(s => s.toUpperCase());
 
-    // Group headers we treat as full-width black bars (EXACT matches)
     const GROUP_HEADERS = ['KPI B2C','KPI B2B','POINT RANKING'];
-
     const AGENT_NAMES = ['YAYAT','EKA','VICKY','JAMAL','DADY','RISMAN','HERLANDO','DANANG','GUNTUR','YANTO'];
 
     fetch(GVIZ_URL)
@@ -224,31 +221,27 @@
       const cols = table.cols.map(c => (c && c.label) ? c.label.toString() : '');
       const rows = table.rows || [];
 
-      // detect first non-empty column index (skip leading empties)
       let start = 0;
       while (start < cols.length && (!cols[start] || cols[start].trim() === '')) start++;
 
       const colUpper = cols.map(c => (c || '').toString().toUpperCase());
-
-      // find agent positions; fallback to assumed mapping D:F...
       const agentPositions = AGENT_NAMES.map(name => {
         const idx = colUpper.findIndex(c => c && c.includes(name));
         return idx >= 0 ? idx : null;
       });
-      const fallbackStart = start + 3; // D
+      const fallbackStart = start + 3;
       const fallbackPositions = AGENT_NAMES.map((_,i) => fallbackStart + i*3);
       const finalAgentPositions = agentPositions.map((p,i) => p === null ? fallbackPositions[i] : p);
 
       const agentGroups = AGENT_NAMES.map((name,i) => ({ name, start: finalAgentPositions[i], span: 3 }));
+      const idxCol = start;
+      const idxTextCol = start + 1;
+      const targetCol = start + 2;
 
-      const idxCol = start;         // A
-      const idxTextCol = start + 1; // B
-      const targetCol = start + 2;  // C
-
-      // build thead with INDEX rowspan=2
       const thead = document.getElementById('tableHead');
       thead.innerHTML = '';
 
+      // HEADER: INDEX rowspan(2) + TARGET rowspan(2) + agent groups
       const top = document.createElement('tr'); top.className = 'top';
       const thIndex = document.createElement('th');
       thIndex.className = 'col-index black-cell';
@@ -271,7 +264,6 @@
       });
       thead.appendChild(top);
 
-      // second header row = Growth Point (agents only). INDEX & TARGET used rowspan so no placeholders here.
       const sub = document.createElement('tr'); sub.className = 'sub';
       agentGroups.forEach(() => {
         const th = document.createElement('th');
@@ -282,7 +274,6 @@
       });
       thead.appendChild(sub);
 
-      // build body
       const tbody = document.getElementById('tableBody');
       tbody.innerHTML = '';
 
@@ -294,16 +285,47 @@
       }
 
       rows.forEach(r => {
-        // if it's an exact group header (e.g. "KPI B2C") -> full-width black row
+        // Special-case: if the leftmost cell exactly equals "KPI 12 PI LATEN" -> render merged A:B with that text (black)
+        const leftRawObj = r.c[idxCol];
+        const leftText = leftRawObj && (leftRawObj.v !== null && leftRawObj.v !== undefined) ? (''+leftRawObj.v).trim() : (leftRawObj && leftRawObj.f ? ''+leftRawObj.f : '');
+        const leftUpper = (leftText || '').toUpperCase();
+
+        if (leftUpper === 'KPI 12 PI LATEN') {
+          const tr = document.createElement('tr');
+          // create merged A:B cell (colspan=2) with black background and white text
+          const tdMerge = document.createElement('td');
+          tdMerge.colSpan = 2;
+          tdMerge.className = 'black-cell';
+          tdMerge.textContent = leftText || 'KPI 12 PI LATEN';
+          tr.appendChild(tdMerge);
+
+          // create an empty TARGET cell (so agents remain aligned)
+          const tdTargetEmpty = document.createElement('td');
+          tdTargetEmpty.className = 'col-target';
+          tdTargetEmpty.textContent = '';
+          tr.appendChild(tdTargetEmpty);
+
+          // append blank agent subcells (3 per group) to keep structure
+          agentGroups.forEach(g => {
+            for (let k=0;k<g.span;k++) {
+              const td = document.createElement('td');
+              td.className = 'agent-sub';
+              tr.appendChild(td);
+            }
+          });
+
+          tbody.appendChild(tr);
+          return;
+        }
+
+        // exact full-width group header (KPI B2C, KPI B2B, POINT RANKING)
         if (isExactGroupHeader(r)) {
           const tr = document.createElement('tr');
           const td = document.createElement('td');
           const totalAgentSubcols = agentGroups.reduce((s,g)=>s+g.span,0);
-          td.colSpan = 2 + 1 + totalAgentSubcols; // INDEX (1) + TARGET (1) + agent subcols
+          td.colSpan = 2 + 1 + totalAgentSubcols; // INDEX + TARGET + agents
           td.className = 'group-header';
-          // If sheet also placed a value in this row's agent area, show it (we use the left-most idxCol text)
-          const txt = (r.c[idxCol] && r.c[idxCol].v) ? r.c[idxCol].v : '';
-          td.textContent = txt;
+          td.textContent = leftText || '';
           tr.appendChild(td);
           tbody.appendChild(tr);
           return;
@@ -312,19 +334,17 @@
         // normal data row
         const tr = document.createElement('tr');
 
-        // Column A bullet
+        // A: bullet
         const tdA = document.createElement('td'); tdA.className = 'col-bullet'; tdA.textContent = '▪️';
         tr.appendChild(tdA);
 
-        // INDEX text (B)
+        // B (index text) and C (target) - with merge if listed
         const idxObj = r.c[idxTextCol];
         const idxText = idxObj && (idxObj.v !== null && idxObj.v !== undefined) ? (''+idxObj.v).trim() : (idxObj && idxObj.f ? ''+idxObj.f : '');
 
-        // target C
         const tObj = r.c[targetCol];
         const tText = tObj && (tObj.v !== null && tObj.v !== undefined) ? tObj.v : (tObj && tObj.f ? tObj.f : '');
 
-        // merge B:C for rows in MERGE_INDEX_TARGET_ROWS
         if (MERGE_INDEX_TARGET_ROWS.includes((idxText||'').toUpperCase())) {
           const tdMerge = document.createElement('td');
           tdMerge.colSpan = 2;
@@ -341,7 +361,7 @@
           tr.appendChild(tdC);
         }
 
-        // agent groups: find first non-empty cell inside group's columns and display in middle subcol
+        // agent groups: find first non-empty cell in group's columns and place it in middle subcol
         agentGroups.forEach(g => {
           let foundVal = null;
           for (let k=0;k<g.span;k++) {
@@ -357,7 +377,6 @@
             }
           }
 
-          // append three subcells, show foundVal in middle one
           for (let k=0;k<g.span;k++) {
             const td = document.createElement('td');
             td.className = 'agent-sub';
@@ -385,7 +404,6 @@
         tbody.appendChild(tr);
       });
 
-      // show table
       document.getElementById('rankWrap').classList.remove('d-none');
     }
   </script>
@@ -393,3 +411,4 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
