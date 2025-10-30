@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Rangking B2C — RANKING B2C</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    /* NAVBAR styling (match desain utama) */
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background-color: #fff;
+      color: #222;
+      padding-top: 70px;
+    }
+
+    .navbar {
+      background-color: #fff !important;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 22px;
+      color: #444 !important;
+      display: flex;
+      align-items: center;
+    }
+
+    .navbar-brand img { height: 40px; margin-right: 10px; }
+
+    .nav-link {
+      color: #333 !important;
+      transition: all 0.3s ease;
+      padding: 8px 15px !important;
+      font-size: 15px;
+      border-radius: 6px;
+    }
+
+    .nav-link:hover, .nav-link:focus {
+      background-color: #f0f0f0;
+      color: #007bff !important;
+    }
+
+    .dropdown-menu { border-radius: 8px; border: 1px solid #ddd; }
+    .dropdown-menu .dropdown-item { font-size: 14px; color: #333; padding: 8px 15px; }
+    .dropdown-menu .dropdown-item:hover { background-color:#007bff; color:#fff; }
+
+    /* TABLE & LAYOUT (same as household) */
+    :root{
+      --black:#0b0b0b;
+      --header-blue:#2f6fb8;
+      --target-red:#d94b4b;
+      --green:#2c9a3d;
+      --red:#d23b3b;
+      --muted:#6b6b6b;
+      --light-gray:#f7f7f7;
+      --cell-border:#e6e6e6;
+      --colA-w:40px;
+      --colB-w:220px;
+      --colC-w:90px;
+      --agent-min-w:60px;
+    }
+
+    .container-main { max-width:1300px; margin:0 auto; }
+    .page-header { display:flex; align-items:center; gap:12px; margin-bottom: 12px; }
+    .page-title { font-weight:700; font-size:20px; }
+
+    .rank-wrapper { overflow:auto; background:#fff; padding:12px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+
+    table.rank-table { border-collapse: collapse; width:100%; table-layout: fixed; min-width: 900px; }
+    table.rank-table thead th, table.rank-table tbody td {
+      border:1px solid var(--cell-border);
+      vertical-align:middle;
+      padding:8px 6px;
+      font-size:13px;
+      word-break:break-word;
+    }
+
+    th.col-bullet, td.col-bullet { width: var(--colA-w); min-width: var(--colA-w); max-width: var(--colA-w); text-align:center; background:#fff; }
+    th.col-index, td.col-index { width: var(--colB-w); min-width: var(--colB-w); max-width: var(--colB-w); text-align:left; background:var(--light-gray); font-weight:700; padding:10px; }
+    th.col-target, td.col-target { width: var(--colC-w); min-width: var(--colC-w); max-width: var(--colC-w); text-align:center; font-weight:700; }
+
+    th.agent-sub, td.agent-sub { min-width: var(--agent-min-w); max-width: 160px; text-align:center; padding:8px; }
+
+    thead tr.top th { background:var(--black); color:#fff; font-weight:700; font-size:12px; text-align:center; padding:10px 6px; }
+    thead tr.sub th { background:var(--header-blue); color:#fff; font-weight:600; font-size:11px; text-align:center; padding:6px 6px; }
+
+    .black-cell, .group-header, thead tr.top th { background: var(--black) !important; color: #fff !important; }
+    .cell-target { background: var(--target-red); color:#fff; }
+
+    .group-header { background: var(--black); color:#fff; font-weight:700; padding:8px 12px; text-align:left; }
+    td.gp { font-weight:700; text-align:center; }
+    td.gp.positive { color: var(--green); }
+    td.gp.negative { color: var(--red); }
+    td.gp.neutral { color: var(--muted); }
+    td.idx-merged { background:var(--light-gray); font-weight:700; padding:10px; }
+
+    @media (max-width: 900px) { .container-main { padding: 0 10px; } table.rank-table { min-width: 800px; } }
+
+    /* small note box under header */
+    .small-note-box { background:#fff; border-left:4px solid var(--header-blue); padding:10px 14px; border-radius:6px; box-shadow:0 1px 6px rgba(0,0,0,0.04); margin-top:6px; font-size:13px; }
+    .small-note-box .title { font-weight:700; margin-bottom:6px; display:flex; gap:8px; align-items:center; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="index.html">
+        <img src="PERFORMANCE TEAM.png" alt="Logo">
+        PERFORMANCE BAN-TAN
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <!-- (left menu kept same as original; adjust links as needed) -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="racingDropdown" role="button" data-bs-toggle="dropdown">Rangking</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="rangking-household.html">Rangking Household</a></li>
+              <li><a class="dropdown-item active" href="ranking-b2c.html">Rangking B2C</a></li>
+              <li><a class="dropdown-item" href="#">Rangking B2B</a></li>
+            </ul>
+          </li>
+
+          <!-- other menus omitted for brevity; keep same items as your main layout -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="kpi12piDropdown" role="button" data-bs-toggle="dropdown">KPI 12 PI Laten</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#">Dashboard 12 PI Laten</a></li>
+              <li><a class="dropdown-item" href="#">Ranking PI Laten HSA</a></li>
+              <li><a class="dropdown-item" href="#">Indikator Not ACH</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="kpiWSADropdown" role="button" data-bs-toggle="dropdown">KPI WSA</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#">FFG</a></li>
+              <li><a class="dropdown-item" href="#">TTI</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container container-main">
+    <div class="page-header">
+      <img src="PERFORMANCE TEAM.png" alt="Performance Team" style="height:42px;">
+      <div>
+        <div class="page-title">Ranking B2C — RANKING B2C</div>
+
+        <div class="small-note-box" role="note" aria-label="Keterangan Perhitungan Point" style="margin-top:6px;">
+          <div class="title"><span class="badge">Ket</span> <span style="margin-left:8px;">Perhitungan Point</span></div>
+          <ul style="margin-top:8px;padding-left:18px;">
+            <li>Indikator pada H-1 <strong>tidak tercapai</strong> terhadap target dan growth sama terhadap H-2 : <span style="color:#d23b3b;font-weight:600;">-2</span></li>
+            <li>Indikator pada H-1 <strong>tidak tercapai</strong> terhadap target dan growth positif terhadap H-2 : <span style="color:#d23b3b;font-weight:600;">-1</span></li>
+            <li>Indikator pada H-1 <strong>tidak tercapai</strong> terhadap target dan growth negatif terhadap H-2 : <span style="color:#d23b3b;font-weight:600;">-3</span></li>
+            <li>Indikator pada H-1 <strong>tercapai</strong> terhadap target dan growth sama terhadap H-2 : <span style="color:#2c9a3d;font-weight:600;">2</span></li>
+            <li>Indikator pada H-1 <strong>tercapai</strong> terhadap target dan growth negatif terhadap H-2 : <span style="color:#2c9a3d;font-weight:600;">1</span></li>
+            <li>Indikator pada H-1 <strong>tercapai</strong> terhadap target dan growth positif terhadap H-2 : <span style="color:#2c9a3d;font-weight:600;">3</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="loading">Memuat data dari Google Sheets…</div>
+    <div id="error" class="text-danger"></div>
+
+    <div class="rank-wrapper d-none" id="rankWrap">
+      <table class="rank-table" id="rankTable" aria-describedby="loading">
+        <thead id="tableHead"></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    const SPREADSHEET_ID = '1nJ5FQ4A9sd4FsxRXuAMr42eHalnd0N2Rm7dK_05Filg';
+    const SHEET_NAME = 'RANKING B2C';
+    const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json`;
+
+    const MERGE_INDEX_TARGET_ROWS = [
+      'B2C CX CUSTOMER (Time to Repair)',
+      'B2C CX CUSTOMER (Management)',
+      'B2C Quality of Service Assurance',
+      'B2C Quality of Alpro',
+      'B2C Quality Data Service',
+      'B2C Quality Control',
+      'B2B CX CUSTOMER (Time to Repair)',
+      'B2B CX CUSTOMER (Management)',
+      'B2B Quality of Service Assurance'
+    ].map(s => s.toUpperCase());
+
+    const GROUP_HEADERS = ['KPI B2C','KPI B2B','POINT RANKING'];
+    const AGENT_NAMES = ['YAYAT','EKA','VICKY','JAMAL','DADY','RISMAN','HERLANDO','DANANG','GUNTUR','YANTO'];
+
+    fetch(GVIZ_URL)
+      .then(r => r.text())
+      .then(text => {
+        const jsonText = text.replace(/^[\s\S]*?setResponse\(|\);?\s*$/g, '');
+        const data = JSON.parse(jsonText);
+        buildTableFixed(data.table);
+      })
+      .catch(err => {
+        document.getElementById('loading').style.display = 'none';
+        const e = document.getElementById('error');
+        e.style.display = 'block';
+        e.textContent = 'Gagal memuat sheet. Pastikan sheet dipublikasikan. Error: ' + err.message;
+      });
+
+    function buildTableFixed(table) {
+      document.getElementById('loading').style.display = 'none';
+      const cols = table.cols.map(c => (c && c.label) ? c.label.toString() : '');
+      const rows = table.rows || [];
+
+      let start = 0;
+      while (start < cols.length && (!cols[start] || cols[start].trim() === '')) start++;
+
+      const colUpper = cols.map(c => (c || '').toString().toUpperCase());
+      const agentPositions = AGENT_NAMES.map(name => {
+        const idx = colUpper.findIndex(c => c && c.includes(name));
+        return idx >= 0 ? idx : null;
+      });
+      const fallbackStart = start + 3;
+      const fallbackPositions = AGENT_NAMES.map((_,i) => fallbackStart + i*3);
+      const finalAgentPositions = agentPositions.map((p,i) => p === null ? fallbackPositions[i] : p);
+
+      const agentGroups = AGENT_NAMES.map((name,i) => ({ name, start: finalAgentPositions[i], span: 3 }));
+      const idxCol = start;         // A (bullet or header)
+      const idxTextCol = start + 1; // B (index text)
+      const targetCol = start + 2;  // C (target)
+
+      const thead = document.getElementById('tableHead'); thead.innerHTML = '';
+
+      // HEADER: INDEX colSpan=2 and rowSpan=2; TARGET rowSpan=2; agents next (each colSpan=3)
+      const top = document.createElement('tr'); top.className = 'top';
+      const thIndex = document.createElement('th');
+      thIndex.className = 'col-index black-cell';
+      thIndex.colSpan = 2;       // covers A+B
+      thIndex.rowSpan = 2;       // covers two header rows vertically
+      thIndex.textContent = 'INDEX';
+      top.appendChild(thIndex);
+
+      const thTarget = document.createElement('th');
+      thTarget.className = 'col-target black-cell';
+      thTarget.rowSpan = 2;
+      thTarget.textContent = 'TARGET';
+      top.appendChild(thTarget);
+
+      agentGroups.forEach(g => {
+        const th = document.createElement('th');
+        th.colSpan = g.span;
+        th.className = 'agent-sub black-cell';
+        th.textContent = g.name;
+        top.appendChild(th);
+      });
+      thead.appendChild(top);
+
+    // second header row: only agent "Growth Point" headers (INDEX & TARGET already rowspan=2)
+      const sub = document.createElement('tr'); sub.className = 'sub';
+      agentGroups.forEach(() => {
+        const th = document.createElement('th');
+        th.className = 'agent-sub';
+        th.colSpan = 3;
+        th.textContent = 'Growth Point';
+        sub.appendChild(th);
+      });
+      thead.appendChild(sub);
+
+      const tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
+
+      rows.forEach(r => {
+        // left cell raw text
+        const leftObj = r.c[idxCol];
+        const leftText = leftObj && (leftObj.v !== null && leftObj.v !== undefined) ? (''+leftObj.v).trim() : (leftObj && leftObj.f ? ''+leftObj.f : '');
+        const leftUpper = (leftText || '').toUpperCase();
+
+        // collect found values for each agent group (first non-empty inside group's 3 cols)
+        const foundVals = agentGroups.map(g => {
+          let v = null;
+          for (let k=0;k<g.span;k++){
+            const sheetIdx = g.start + k;
+            const cellObj = r.c[sheetIdx];
+            let raw = '';
+            if (cellObj) {
+              if (cellObj.v !== null && cellObj.v !== undefined) raw = cellObj.v;
+              else if (cellObj.f) raw = cellObj.f;
+            }
+            if ((raw !== '' && raw !== null && raw !== undefined) && v === null) v = raw;
+          }
+          return v;
+        });
+
+        const anyAgentValue = foundVals.some(x => x !== null && x !== undefined && (''+x).trim() !== '');
+
+        // If row label is one of GROUP_HEADERS and there are NO agent values -> full-width group header
+        if (GROUP_HEADERS.some(k => k.toUpperCase() === leftUpper) && !anyAgentValue) {
+          const tr = document.createElement('tr');
+          const td = document.createElement('td');
+          const totalAgentSubcols = agentGroups.reduce((s,g)=>s+g.span,0);
+          td.colSpan = 2 + 1 + totalAgentSubcols; // A+B + TARGET + agents
+          td.className = 'group-header';
+          td.textContent = leftText || '';
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+          return;
+        }
+
+        // Otherwise render as normal data row (but if left is one of group headers, show it merged A:B black)
+        const tr = document.createElement('tr');
+
+        // If left is group header label, show merged A:B black cell with that text; else show bullet in A and index text in B (or merged B:C)
+        if (GROUP_HEADERS.some(k => k.toUpperCase() === leftUpper)) {
+          // merged A:B with black label
+          const tdMerge = document.createElement('td');
+          tdMerge.colSpan = 2;
+          tdMerge.className = 'black-cell';
+          tdMerge.textContent = leftText || '';
+          tr.appendChild(tdMerge);
+        } else {
+          // normal bullet (A)
+          const tdA = document.createElement('td'); tdA.className = 'col-bullet'; tdA.textContent = '▪️';
+          tr.appendChild(tdA);
+          // index text (B) or merge B:C if listed
+          const idxObj = r.c[idxTextCol];
+          const idxText = idxObj && (idxObj.v !== null && idxObj.v !== undefined) ? (''+idxObj.v).trim() : (idxObj && idxObj.f ? ''+idxObj.f : '');
+          const tObj = r.c[targetCol];
+          const tText = tObj && (tObj.v !== null && tObj.v !== undefined) ? tObj.v : (tObj && tObj.f ? tObj.f : '');
+
+          if (MERGE_INDEX_TARGET_ROWS.includes((idxText||'').toUpperCase())) {
+            const tdMerge = document.createElement('td'); tdMerge.colSpan = 2; tdMerge.className = 'idx-merged'; tdMerge.textContent = idxText || ''; tr.appendChild(tdMerge);
+          } else {
+            const tdB = document.createElement('td'); tdB.className = 'col-index'; tdB.textContent = idxText || ''; tr.appendChild(tdB);
+            const tdC = document.createElement('td'); tdC.className = 'col-target'; tdC.textContent = (tText!==undefined && tText!==null) ? tText : ''; if (!tText || (''+tText).toUpperCase().includes('TARGET')) tdC.classList.add('cell-target'); tr.appendChild(tdC);
+          }
+        }
+
+        // append agent group values (middle subcol) for every group
+        agentGroups.forEach((g,i) => {
+          for (let k=0;k<g.span;k++){
+            const td = document.createElement('td'); td.className = 'agent-sub';
+            if (k===1 && foundVals[i] !== null && foundVals[i] !== undefined && (''+foundVals[i]).trim() !== '') {
+              const foundVal = foundVals[i];
+              if (typeof foundVal === 'number') {
+                td.classList.add('gp'); td.classList.add(foundVal>0? 'positive': (foundVal<0? 'negative':'neutral'));
+                td.textContent = foundVal;
+              } else {
+                const m = ((''+foundVal).match(/-?\d+/) || [null])[0];
+                if (m !== null && m !== undefined) {
+                  const n = parseInt(m,10);
+                  td.classList.add('gp'); td.classList.add(n>0? 'positive': (n<0? 'negative':'neutral'));
+                  td.textContent = (''+foundVal).trim();
+                } else td.textContent = ''+foundVal;
+              }
+            }
+            tr.appendChild(td);
+          }
+        });
+
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('rankWrap').classList.remove('d-none');
+    }
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
