@@ -163,37 +163,56 @@
     </div>
   </nav>
   <main class="container container-main">
-    <div class="page-header">
-      <img src="PERFORMANCE TEAM.png" alt="" style="height:42px;">
-      <div>
-        <div class="page-title">Ranking Household — RANKING HSA</div>
+  <div class="page-header">
+    <img src="PERFORMANCE TEAM.png" alt="Performance Team" style="height:42px;">
+
+    <div>
+      <div class="page-title">Ranking Household — RANKING HSA</div>
+
+      <!-- Keterangan Perhitungan Point -->
       <div class="small-note-box" role="note" aria-label="Keterangan Perhitungan Point">
-  <div class="title">
-    <span class="badge">Ket</span>
-    <span>Perhitungan Point</span>
+        <div class="title">
+          <span class="badge">Ket</span>
+          <span>Perhitungan Point</span>
+        </div>
+
+        <ul>
+          <li>▪️ Indikator pada H-1 <strong>tidak tercapai</strong> terhadap target dan growth sama terhadap H-2 :
+            <span class="point-neg">-2</span>
+          </li>
+          <li>▪️ Indikator pada H-1 <strong>tidak tercapai</strong> terhadap target dan growth positif terhadap H-2 :
+            <span class="point-neg">-1</span>
+          </li>
+          <li>▪️ Indikator pada H-1 <strong>tidak tercapai</strong> terhadap target dan growth negatif terhadap H-2 :
+            <span class="point-neg">-3</span>
+          </li>
+          <li>▪️ Indikator pada H-1 <strong>tercapai</strong> terhadap target dan growth sama terhadap H-2 :
+            <span class="point-pos">2</span>
+          </li>
+          <li>▪️ Indikator pada H-1 <strong>tercapai</strong> terhadap target dan growth negatif terhadap H-2 :
+            <span class="point-pos">1</span>
+          </li>
+          <li>▪️ Indikator pada H-1 <strong>tercapai</strong> terhadap target dan growth positif terhadap H-2 :
+            <span class="point-pos">3</span>
+          </li>
+        </ul>
+      </div>
+      <!-- end .small-note-box -->
+    </div>
+    <!-- end inner div -->
   </div>
+  <!-- end .page-header -->
 
-  <ul>
-    <li>▪️ Indikator pada H-1 <strong>tidak tercapai</strong> terhadap target dan growth sama terhadap H-2 : <span class="point-neg">-2</span></li>
-    <li>▪️ Indikator pada H-1 <strong>tidak tercapai</strong> terhadap target dan growth positif terhadap H-2 : <span class="point-neg">-1</span></li>
-    <li>▪️ Indikator pada H-1 <strong>tidak tercapai</strong> terhadap target dan growth negatif terhadap H-2 : <span class="point-neg">-3</span></li>
-    <li>▪️ Indikator pada H-1 <strong>tercapai</strong> terhadap target dan growth sama terhadap H-2 : <span class="point-pos">2</span></li>
-    <li>▪️ Indikator pada H-1 <strong>tercapai</strong> terhadap target dan growth negatif terhadap H-2 : <span class="point-pos">1</span></li>
-    <li>▪️ Indikator pada H-1 <strong>tercapai</strong> terhadap target dan growth positif terhadap H-2 : <span class="point-pos">3</span></li>
-  </ul>
-</div>
-    </div>
+  <div id="loading">Memuat data dari Google Sheets…</div>
+  <div id="error" class="text-danger"></div>
 
-    <div id="loading">Memuat data dari Google Sheets…</div>
-    <div id="error" class="text-danger"></div>
-
-    <div class="rank-wrapper d-none" id="rankWrap">
-      <table class="rank-table" id="rankTable" aria-describedby="loading">
-        <thead id="tableHead"></thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-    </div>
-  </main>
+  <div class="rank-wrapper d-none" id="rankWrap">
+    <table class="rank-table" id="rankTable" aria-describedby="loading">
+      <thead id="tableHead"></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</main>
 
   <script>
     const SPREADSHEET_ID = '1nJ5FQ4A9sd4FsxRXuAMr42eHalnd0N2Rm7dK_05Filg';
