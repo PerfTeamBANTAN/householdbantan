@@ -13,10 +13,12 @@
       --header-blue:#2f6fb8;
       --target-red:#d94b4b;
       --muted:#6b6b6b;
-      --light-gray:#f7f7f7;
+      --light-gray:#fafafa;
       --cell-border:#e6e6e6;
-      --agent-col-w:70px; /* lebar setiap kolom agent */
-      --agent-header-h:120px; /* tinggi area header sebelum rotasi */
+      --idx-w:260px;    /* fixed width INDEX column */
+      --target-w:90px;  /* fixed width TARGET column */
+      --agent-min-w:70px; /* minimum width per agent column */
+      --agent-col-w:90px; /* will be overwritten by JS */
     }
 
     body {
@@ -26,89 +28,57 @@
       padding-top: 70px;
     }
 
-    .container-main { max-width:1300px; margin:0 auto; }
+    .container-main { max-width:1280px; margin:0 auto; }
 
-    .page-header { display:flex; align-items:center; gap:12px; margin-bottom: 18px; }
+    .page-header { display:flex; align-items:center; gap:12px; margin-bottom: 12px; }
     .page-title { font-weight:700; font-size:20px; }
 
-    .rank-wrapper { overflow:auto; background:#fff; padding:10px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+    .rank-wrapper {
+      overflow:auto;
+      background:#fff;
+      padding:12px;
+      border-radius:8px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.04);
+    }
 
-    /* Fixed layout so columns predictable */
-    table.rank-table { border-collapse: collapse; width:100%; table-layout: fixed; min-width: 1200px; }
+    /* Table: use fixed layout so widths are predictable, but we'll compute agent width */
+    table.rank-table { border-collapse: collapse; width:100%; table-layout: fixed; min-width: 700px; }
     table.rank-table thead th, table.rank-table tbody td {
       border:1px solid var(--cell-border);
-      padding:6px;
       vertical-align:middle;
+      padding:8px 6px;
       font-size:13px;
     }
 
-    /* Left columns widths */
-    th.idx, td.idx { width:260px; text-align:left; background:var(--light-gray); font-weight:700; padding:10px; }
-    th.target, td.target { width:90px; text-align:center; font-weight:700; }
+    /* Left columns - fixed */
+    th.idx, td.idx { width: var(--idx-w); min-width: var(--idx-w); max-width: var(--idx-w); text-align:left; background:var(--light-gray); font-weight:700; padding:10px; }
+    th.target, td.target { width: var(--target-w); min-width: var(--target-w); max-width: var(--target-w); text-align:center; font-weight:700; }
 
-    /* Agent columns fixed width */
-    th.agent, td.agent { width: var(--agent-col-w); max-width: var(--agent-col-w); text-align:center; padding:6px; }
+    /* Agent columns: use CSS variable for width */
+    th.agent, td.agent { width: var(--agent-col-w); min-width: var(--agent-col-w); max-width: var(--agent-col-w); text-align:center; padding:8px; word-break:break-word; }
 
-    /* Top header row style (we will keep it visually compact) */
-    thead tr.top-row th {
+    /* Header styling: two rows */
+    thead tr.header-top th {
       background: var(--black);
       color:#fff;
       font-weight:700;
       text-align:center;
-      padding:6px 6px;
-      white-space:nowrap;
       font-size:12px;
+      padding:10px 6px;
     }
-
-    /* The header cell that contains the rotated block (for each agent) */
-    thead tr.top-row th.agent {
-      padding:0;
-      height: var(--agent-header-h);
-      vertical-align:bottom;
-    }
-
-    /* sub-row will be hidden visually because we combine label into rotated block */
-    thead tr.sub-row { display:none; }
-
-    /* Rotated label container inside th */
-    .rotated {
-      width: var(--agent-col-w);
-      height: var(--agent-header-h);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      position:relative;
-    }
-
-    .rotated .text {
-      transform: rotate(-90deg);
-      transform-origin: center;
-      white-space:nowrap;
-      font-weight:700;
-      font-size:12px;
-      color:#fff;
-      display:block;
-      padding:0 6px;
-    }
-
-    /* We'll create a stacked visual: black top (name) and blue bottom (Growth Point) inside rotated box */
-    .rotated .name {
-      background: var(--black);
-      display:block;
-      padding:6px 8px;
-    }
-    .rotated .sub {
+    thead tr.header-sub th {
       background: var(--header-blue);
-      display:block;
-      padding:4px 8px;
-      font-size:11px;
+      color:#fff;
       font-weight:600;
+      text-align:center;
+      font-size:11px;
+      padding:6px 6px;
     }
 
-    /* TARGET red cell style (if has word 'TARGET' or empty) */
+    /* TARGET red cell style when appropriate */
     .cell-target { background: var(--target-red); color:#fff; }
 
-    /* Group header full-width row */
+    /* group header full-width */
     .group-header {
       background: var(--black);
       color:#fff;
@@ -117,20 +87,19 @@
       text-align:left;
     }
 
-    /* Number cell colors */
+    /* numbers style */
     td.gp { font-weight:700; text-align:center; }
-    td.gp.positive { color:#2c9a3d; } /* green */
-    td.gp.negative { color:#d23b3b; } /* red */
+    td.gp.positive { color:#2c9a3d; }
+    td.gp.negative { color:#d23b3b; }
     td.gp.neutral { color:var(--muted); }
 
-    /* tidy fonts */
-    tbody td { font-size:13px; }
+    /* tidy */
     tbody td.idx { font-size:13px; }
+    .small-note { font-size:12px; color:#666; }
 
-    /* small screens: allow horizontal scroll */
-    @media (max-width:1100px){
-      .container-main { padding: 0 12px; }
-      table.rank-table { min-width: 1000px; }
+    /* responsiveness: allow horizontal scroll when not enough room */
+    @media (max-width: 1000px) {
+      .container-main { padding: 0 10px; }
     }
   </style>
 </head>
@@ -159,7 +128,7 @@
       <img src="PERFORMANCE TEAM.png" alt="" style="height:42px;">
       <div>
         <div class="page-title">Ranking Household — RANKING HSA</div>
-        <small class="text-muted">Header agent diputar vertikal supaya muat rapi</small>
+        <div class="small-note">Tabel akan otomatis menyesuaikan lebar kolom agent agar rapi</div>
       </div>
     </div>
 
@@ -175,17 +144,21 @@
   </main>
 
   <script>
-    // CONFIG
+    // CONFIG (sheets harus di-publish / anyone with link can view)
     const SPREADSHEET_ID = '1nJ5FQ4A9sd4FsxRXuAMr42eHalnd0N2Rm7dK_05Filg';
     const SHEET_NAME = 'RANKING HSA';
     const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json`;
+
+    const idxWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--idx-w')) || 260;
+    const targetWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--target-w')) || 90;
+    const agentMin = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--agent-min-w')) || 70;
 
     fetch(GVIZ_URL)
       .then(r => r.text())
       .then(text => {
         const jsonText = text.replace(/^[\s\S]*?setResponse\(|\);?\s*$/g, '');
         const data = JSON.parse(jsonText);
-        renderVerticalHeaderTable(data.table);
+        buildAutoFitTable(data.table);
       })
       .catch(err => {
         document.getElementById('loading').style.display = 'none';
@@ -194,107 +167,78 @@
         e.textContent = 'Gagal memuat sheet. Pastikan sheet dipublikasikan (Anyone with link can view). Error: ' + err.message;
       });
 
-    function renderVerticalHeaderTable(table) {
+    function buildAutoFitTable(table) {
       document.getElementById('loading').style.display = 'none';
       const cols = table.cols.map(c => c.label || c.id || '');
       const rows = table.rows || [];
 
-      // determine start index (skip initial empty column if present)
+      // detect start index (skip empty leading columns)
       let startIdx = 0;
       while (startIdx < cols.length && (!cols[startIdx] || cols[startIdx].trim() === '')) startIdx++;
       const idxCol = startIdx;
       const targetCol = startIdx + 1;
-      const agentColsStart = startIdx + 2;
-      const agentNames = cols.slice(agentColsStart).map(s => s || '');
+      const agentStart = startIdx + 2;
+      const agentNames = cols.slice(agentStart).map(x => x || '');
 
-      // build thead: we will create 1 row whose agent th include rotated blocks
+      // determine available width inside wrapper
+      const wrap = document.getElementById('rankWrap');
+      // temporarily show wrapper (in case hidden) to measure
+      wrap.classList.remove('d-none');
+      // small timeout to ensure layout computed
+      setTimeout(() => {
+        const available = Math.max(600, wrap.clientWidth - idxWidth - targetWidth);
+        const agentCount = Math.max(1, agentNames.length);
+        let agentWidth = Math.floor(available / agentCount);
+        if (agentWidth < agentMin) agentWidth = agentMin; // set minimum
+        // set CSS variable
+        document.documentElement.style.setProperty('--agent-col-w', agentWidth + 'px');
+
+        // Now build header and body using that width
+        renderTableContent(table, idxCol, targetCol, agentStart, agentNames);
+      }, 10);
+    }
+
+    function renderTableContent(table, idxCol, targetCol, agentStart, agentNames) {
+      const rows = table.rows || [];
       const thead = document.getElementById('tableHead');
       thead.innerHTML = '';
 
-      const topRow = document.createElement('tr');
-      topRow.className = 'top-row';
+      // TOP header (names)
+      const trTop = document.createElement('tr');
+      trTop.className = 'header-top';
+      const thIdx = document.createElement('th'); thIdx.className = 'idx'; thIdx.rowSpan = 2; thIdx.textContent = 'INDEX';
+      const thTarget = document.createElement('th'); thTarget.className = 'target'; thTarget.rowSpan = 2; thTarget.textContent = 'TARGET';
+      trTop.appendChild(thIdx); trTop.appendChild(thTarget);
 
-      const thIndex = document.createElement('th');
-      thIndex.className = 'idx';
-      thIndex.rowSpan = 1;
-      thIndex.textContent = 'INDEX';
-      topRow.appendChild(thIndex);
-
-      const thTarget = document.createElement('th');
-      thTarget.className = 'target';
-      thTarget.rowSpan = 1;
-      thTarget.textContent = 'TARGET';
-      topRow.appendChild(thTarget);
-
-      // For each agent, create a th.agent containing rotated block with name (black) and Growth Point (blue)
       agentNames.forEach(name => {
         const th = document.createElement('th');
         th.className = 'agent';
-
-        const rot = document.createElement('div');
-        rot.className = 'rotated';
-
-        // inner stacked block: name (black) and sub (blue)
-        const nameBlock = document.createElement('div');
-        nameBlock.className = 'name';
-        nameBlock.style.width = '100%';
-        nameBlock.innerHTML = `<span class="text">${(name||'').toUpperCase()}</span>`;
-
-        const subBlock = document.createElement('div');
-        subBlock.className = 'sub';
-        subBlock.style.width = '100%';
-        subBlock.innerHTML = `<span class="text">GROWTH POINT</span>`;
-
-        // To make rotation consistent, we wrap both blocks into a single element and rotate the wrapper text
-        // We'll create a container and inside put two stacked spans (but both will be rotated together)
-        const wrapper = document.createElement('div');
-        wrapper.style.display = 'flex';
-        wrapper.style.flexDirection = 'column';
-        wrapper.style.alignItems = 'center';
-        wrapper.style.justifyContent = 'center';
-        wrapper.style.height = '100%';
-        wrapper.style.width = '100%';
-
-        // Create two small bars, but their inner text will be rotated via CSS by creating .text elements above.
-        // Instead of rotating separate pieces, we'll simply put two spans rotated.
-        const topText = document.createElement('span');
-        topText.className = 'text';
-        topText.style.background = 'var(--black)';
-        topText.style.display = 'inline-block';
-        topText.style.padding = '6px 8px';
-        topText.style.color = '#fff';
-        topText.style.fontWeight = '700';
-        topText.textContent = (name || '').toUpperCase();
-
-        const bottomText = document.createElement('span');
-        bottomText.className = 'text';
-        bottomText.style.background = 'var(--header-blue)';
-        bottomText.style.display = 'inline-block';
-        bottomText.style.padding = '4px 8px';
-        bottomText.style.color = '#fff';
-        bottomText.style.fontWeight = '600';
-        bottomText.style.marginTop = '6px';
-        bottomText.textContent = 'GROWTH POINT';
-
-        // We'll rotate the wrapper which contains the two spans stacked vertically
-        const rotatedWrapper = document.createElement('div');
-        rotatedWrapper.style.transform = 'rotate(-90deg)';
-        rotatedWrapper.style.transformOrigin = 'center';
-        rotatedWrapper.style.display = 'flex';
-        rotatedWrapper.style.flexDirection = 'column';
-        rotatedWrapper.style.alignItems = 'center';
-        rotatedWrapper.style.justifyContent = 'center';
-        rotatedWrapper.appendChild(topText);
-        rotatedWrapper.appendChild(bottomText);
-
-        rot.appendChild(rotatedWrapper);
-        th.appendChild(rot);
-        topRow.appendChild(th);
+        // allow name wrap across two lines, uppercase like sheet
+        const t = document.createElement('div');
+        t.style.fontWeight = '700';
+        t.style.fontSize = '12px';
+        t.style.whiteSpace = 'normal';
+        t.style.lineHeight = '1.1';
+        t.textContent = (name || '').toUpperCase();
+        th.appendChild(t);
+        trTop.appendChild(th);
       });
+      thead.appendChild(trTop);
 
-      thead.appendChild(topRow);
+      // SUB header (Growth Point)
+      const trSub = document.createElement('tr');
+      trSub.className = 'header-sub';
+      // create empty placeholders for idx & target because they have rowspan=2
+      // we skip adding cells for them here (they already span)
+      agentNames.forEach(_ => {
+        const th = document.createElement('th');
+        th.className = 'agent';
+        th.textContent = 'Growth Point';
+        trSub.appendChild(th);
+      });
+      thead.appendChild(trSub);
 
-      // body
+      // Build body
       const tbody = document.getElementById('tableBody');
       tbody.innerHTML = '';
 
@@ -310,30 +254,30 @@
         return false;
       }
 
-      rows.forEach((r) => {
-        if (isGroupHeader(r)) {
-          const trg = document.createElement('tr');
-          const tdg = document.createElement('td');
-          tdg.colSpan = 2 + agentNames.length;
-          tdg.className = 'group-header';
-          tdg.textContent = (r.c[idxCol] && r.c[idxCol].v) ? r.c[idxCol].v : '';
-          trg.appendChild(tdg);
-          tbody.appendChild(trg);
+      rows.forEach(row => {
+        if (isGroupHeader(row)) {
+          const tr = document.createElement('tr');
+          const td = document.createElement('td');
+          td.colSpan = 2 + agentNames.length;
+          td.className = 'group-header';
+          td.textContent = row.c[idxCol] && row.c[idxCol].v ? row.c[idxCol].v : '';
+          tr.appendChild(td);
+          tbody.appendChild(tr);
           return;
         }
 
         const tr = document.createElement('tr');
 
         // INDEX
-        const tdIdx = document.createElement('td');
-        tdIdx.className = 'idx';
-        const idxVal = (r.c[idxCol] && (r.c[idxCol].v !== null && r.c[idxCol].v !== undefined)) ? r.c[idxCol].v : (r.c[idxCol] && r.c[idxCol].f ? r.c[idxCol].f : '');
-        tdIdx.textContent = idxVal || '';
-        tr.appendChild(tdIdx);
+        const tdIndex = document.createElement('td');
+        tdIndex.className = 'idx';
+        const idxVal = (row.c[idxCol] && (row.c[idxCol].v !== null && row.c[idxCol].v !== undefined)) ? row.c[idxCol].v : (row.c[idxCol] && row.c[idxCol].f ? row.c[idxCol].f : '');
+        tdIndex.textContent = idxVal || '';
+        tr.appendChild(tdIndex);
 
         // TARGET
         const tdT = document.createElement('td');
-        const tVal = (r.c[targetCol] && (r.c[targetCol].v !== null && r.c[targetCol].v !== undefined)) ? r.c[targetCol].v : (r.c[targetCol] && r.c[targetCol].f ? r.c[targetCol].f : '');
+        const tVal = (row.c[targetCol] && (row.c[targetCol].v !== null && row.c[targetCol].v !== undefined)) ? row.c[targetCol].v : (row.c[targetCol] && row.c[targetCol].f ? row.c[targetCol].f : '');
         if (String(tVal).toUpperCase().includes('TARGET') || String(tVal).trim() === '') {
           tdT.className = 'target cell-target';
         } else {
@@ -343,16 +287,15 @@
         tr.appendChild(tdT);
 
         // agents
-        for (let ci = agentColsStart; ci < agentColsStart + agentNames.length; ci++) {
-          const cell = r.c[ci];
+        for (let ci = agentStart; ci < agentStart + agentNames.length; ci++) {
+          const cell = row.c[ci];
           let raw = '';
           if (cell) {
             if (cell.v !== null && cell.v !== undefined) raw = cell.v;
             else if (cell.f) raw = cell.f;
           }
           const td = document.createElement('td');
-          td.className = 'agent'; // ensure width applied
-          // numeric?
+          td.className = 'agent';
           if (typeof raw === 'number') {
             td.className += ' gp ' + (raw > 0 ? 'positive' : (raw < 0 ? 'negative' : 'neutral'));
             td.textContent = raw;
@@ -373,8 +316,22 @@
         tbody.appendChild(tr);
       });
 
+      // done
       document.getElementById('rankWrap').classList.remove('d-none');
     }
+
+    // Recompute sizes on window resize for responsiveness
+    window.addEventListener('resize', () => {
+      // refetch and rebuild to recompute widths could be heavy; instead just recompute CSS var
+      const wrap = document.getElementById('rankWrap');
+      if (!wrap || wrap.classList.contains('d-none')) return;
+      const agentCount = document.querySelectorAll('#tableHead th.agent').length || 1;
+      const available = Math.max(600, wrap.clientWidth - idxWidth - targetWidth);
+      let agentWidth = Math.floor(available / agentCount);
+      if (agentWidth < agentMin) agentWidth = agentMin;
+      document.documentElement.style.setProperty('--agent-col-w', agentWidth + 'px');
+    });
+
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
