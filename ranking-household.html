@@ -167,7 +167,7 @@
       <img src="PERFORMANCE TEAM.png" alt="" style="height:42px;">
       <div>
         <div class="page-title">Ranking Household — RANKING HSA</div>
-        <div class="small-note">Perbaikan: HEADER INDEX pake colspan=A:B; KPI 12 PI LATEN juga merge A:B.</div>
+        <div class="small-note">Perbaikan: INDEX colSpan=A:B & rowSpan=2, TARGET rowSpan=2, header sub-row hanya Growth Point.</div>
       </div>
     </div>
 
@@ -234,22 +234,23 @@
       const finalAgentPositions = agentPositions.map((p,i) => p === null ? fallbackPositions[i] : p);
 
       const agentGroups = AGENT_NAMES.map((name,i) => ({ name, start: finalAgentPositions[i], span: 3 }));
-      const idxCol = start;         // A
-      const idxTextCol = start + 1; // B
-      const targetCol = start + 2;  // C
+      const idxCol = start;         // A (bullet or header)
+      const idxTextCol = start + 1; // B (index text)
+      const targetCol = start + 2;  // C (target)
 
       const thead = document.getElementById('tableHead'); thead.innerHTML = '';
 
-      // HEADER: INDEX colspan=2 (A+B), TARGET rowspan=2, agents groups
+      // HEADER: INDEX colSpan=2 and rowSpan=2; TARGET rowSpan=2; agents next (each colSpan=3)
       const top = document.createElement('tr'); top.className = 'top';
       const thIndex = document.createElement('th');
       thIndex.className = 'col-index black-cell';
-      thIndex.colSpan = 2; // <-- make INDEX span A and B
+      thIndex.colSpan = 2;       // covers A+B
+      thIndex.rowSpan = 2;       // covers two header rows vertically
       thIndex.textContent = 'INDEX';
       top.appendChild(thIndex);
 
       const thTarget = document.createElement('th');
-      thTarget.className = 'col-target';
+      thTarget.className = 'col-target black-cell';
       thTarget.rowSpan = 2;
       thTarget.textContent = 'TARGET';
       top.appendChild(thTarget);
@@ -263,7 +264,7 @@
       });
       thead.appendChild(top);
 
-      // second header row: only agent Growth Point (INDEX handled by colspan above)
+      // second header row: only agent "Growth Point" headers (INDEX & TARGET already rowspan=2)
       const sub = document.createElement('tr'); sub.className = 'sub';
       agentGroups.forEach(() => {
         const th = document.createElement('th');
@@ -274,7 +275,6 @@
       });
       thead.appendChild(sub);
 
-      // BODY
       const tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
 
       function isExactGroupHeader(r) {
@@ -285,30 +285,31 @@
       }
 
       rows.forEach(r => {
-        // handle KPI 12 PI LATEN specially: put merged A:B black cell with text
+        // KPI 12 PI LATEN -> merge A:B black cell (replace bullet + index text)
         const leftObj = r.c[idxCol];
         const leftText = leftObj && (leftObj.v !== null && leftObj.v !== undefined) ? (''+leftObj.v).trim() : (leftObj && leftObj.f ? ''+leftObj.f : '');
         const leftUpper = (leftText || '').toUpperCase();
 
         if (leftUpper === 'KPI 12 PI LATEN') {
           const tr = document.createElement('tr');
-          // merged cell A:B
           const tdMerge = document.createElement('td');
-          tdMerge.colSpan = 2;
+          tdMerge.colSpan = 2;        // A + B
           tdMerge.className = 'black-cell';
           tdMerge.textContent = leftText || 'KPI 12 PI LATEN';
           tr.appendChild(tdMerge);
 
-          // add target empty cell to align (C)
+          // add empty TARGET cell (C) so agents remain aligned
           const tdTargetEmpty = document.createElement('td');
           tdTargetEmpty.className = 'col-target';
           tdTargetEmpty.textContent = '';
           tr.appendChild(tdTargetEmpty);
 
-          // add empty agent subcells to keep alignment
+          // append blank agent subcells
           agentGroups.forEach(g => {
             for (let k=0;k<g.span;k++){
-              const td = document.createElement('td'); td.className = 'agent-sub'; tr.appendChild(td);
+              const td = document.createElement('td');
+              td.className = 'agent-sub';
+              tr.appendChild(td);
             }
           });
 
@@ -316,7 +317,7 @@
           return;
         }
 
-        // exact group header (KPI B2C, KPI B2B, POINT RANKING)
+        // FULL-WIDTH group header exact matches
         if (isExactGroupHeader(r)) {
           const tr = document.createElement('tr');
           const td = document.createElement('td');
@@ -333,9 +334,10 @@
         const tr = document.createElement('tr');
 
         // Column A: bullet
-        const tdA = document.createElement('td'); tdA.className = 'col-bullet'; tdA.textContent = '▪️'; tr.appendChild(tdA);
+        const tdA = document.createElement('td'); tdA.className = 'col-bullet'; tdA.textContent = '▪️';
+        tr.appendChild(tdA);
 
-        // INDEX text (B) and TARGET (C)
+        // INDEX (B) and TARGET (C) - with optional merge B:C
         const idxObj = r.c[idxTextCol];
         const idxText = idxObj && (idxObj.v !== null && idxObj.v !== undefined) ? (''+idxObj.v).trim() : (idxObj && idxObj.f ? ''+idxObj.f : '');
         const tObj = r.c[targetCol];
@@ -348,7 +350,7 @@
           const tdC = document.createElement('td'); tdC.className = 'col-target'; tdC.textContent = (tText!==undefined && tText!==null) ? tText : ''; if (!tText || (''+tText).toUpperCase().includes('TARGET')) tdC.classList.add('cell-target'); tr.appendChild(tdC);
         }
 
-        // agents groups: search group's columns and place first found value on middle subcol
+        // agent groups: first non-empty value in group goes to middle subcol
         agentGroups.forEach(g => {
           let foundVal = null;
           for (let k=0;k<g.span;k++){
@@ -363,7 +365,8 @@
           }
 
           for (let k=0;k<g.span;k++){
-            const td = document.createElement('td'); td.className = 'agent-sub';
+            const td = document.createElement('td');
+            td.className = 'agent-sub';
             if (k===1 && foundVal !== null) {
               if (typeof foundVal === 'number') {
                 td.classList.add('gp'); td.classList.add(foundVal>0? 'positive': (foundVal<0? 'negative':'neutral'));
