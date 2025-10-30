@@ -8,12 +8,23 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
+    :root{
+      --black:#0b0b0b;
+      --header-blue:#2f6fb8;
+      --target-red:#d94b4b;
+      --muted:#6b6b6b;
+      --light-gray:#f3f3f3;
+      --cell-border:#e6e6e6;
+    }
+
     body {
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       background: #fff;
       color: #222;
       padding-top: 70px;
     }
+
+    .container-main { max-width:1200px; margin:0 auto; }
 
     .page-header {
       display:flex;
@@ -27,75 +38,76 @@
       font-size:20px;
     }
 
-    /* Table style to resemble screenshot */
-    .rank-table {
-      border-collapse: collapse;
-      width: 100%;
-      background: #fff;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-    }
+    /* Table layout */
+    .rank-wrapper { overflow-x:auto; background:#fff; padding:10px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+    table.rank-table { border-collapse: collapse; width:100%; table-layout:fixed; min-width:1100px; }
+    table.rank-table thead th,
+    table.rank-table tbody td { border:1px solid var(--cell-border); padding:6px 8px; vertical-align:middle; font-size:13px; }
 
-    .rank-table thead th {
-      background: #0b0b0b; /* strong black */
-      color: #fff;
-      font-weight:700;
-      padding: 8px 10px;
-      text-align:center;
-      border: 1px solid rgba(255,255,255,0.05);
-      white-space: nowrap;
-    }
-
-    .rank-table tbody td {
-      border: 1px solid #e8e8e8;
-      padding: 6px 8px;
-      vertical-align: middle;
-      font-size: 13px;
-    }
-
-    /* Target cell (red) */
-    .cell-target {
-      background: #d94b4b;
-      color: #fff;
-      text-align:center;
-      font-weight:700;
-    }
-
-    /* Growth points colors and badges */
-    .gp {
+    /* Top header (first row) */
+    thead tr.top-row th {
+      background: var(--black);
+      color:#fff;
       font-weight:700;
       text-align:center;
+      padding:10px 8px;
+      white-space:nowrap;
     }
-    .gp.positive { color: #2c9a3d; } /* green */
-    .gp.negative { color: #d23b3b; } /* red */
-    .gp.neutral { color: #666; }
 
-    /* Small index column style */
-    .index-col {
+    /* Second header row (subheaders like Growth Point) */
+    thead tr.sub-row th {
+      background: var(--header-blue);
+      color:#fff;
+      font-weight:600;
+      text-align:center;
+      padding:6px 8px;
+      white-space:nowrap;
+    }
+
+    /* Left columns (INDEX/TARGET) */
+    th.idx, td.idx { width:220px; text-align:left; background:var(--light-gray); font-weight:700; }
+    th.target, td.target { width:80px; text-align:center; font-weight:700; }
+
+    /* TARGET red cell style */
+    .cell-target { background: var(--target-red); color:#fff; }
+
+    /* Group header full-width row */
+    .group-header {
+      background: var(--black);
+      color:#fff;
       font-weight:700;
-      background: #f3f3f3;
+      padding:8px 12px;
       text-align:left;
     }
 
-    /* Highlight row groups */
-    .group-header {
-      background: #0b0b0b;
-      color:#fff;
-      font-weight:700;
-      padding:8px 10px;
+    /* Number cell colors */
+    td.gp { font-weight:700; text-align:center; }
+    td.gp.positive { color:#2c9a3d; } /* green */
+    td.gp.negative { color:#d23b3b; } /* red */
+    td.gp.neutral { color:var(--muted); }
+
+    /* Small bullet icon column */
+    td.bullet { width:24px; text-align:center; color:#444; }
+
+    /* Make the "INDEX" leftmost header keep multi-line like screenshot */
+    .index-heading { background:#000; color:#fff; padding:10px; font-weight:700; }
+
+    /* Responsive tweak for small screens */
+    @media (max-width:900px){
+      .container-main { padding: 0 12px; }
+      thead tr.top-row th, thead tr.sub-row th { font-size:12px; padding:8px 6px; }
+      table.rank-table { min-width:900px; }
     }
 
-    /* responsive */
-    .table-responsive { overflow-x:auto; }
-
-    /* Loading & error */
-    #loading { text-align:center; padding:40px 0; color:#666; }
-    #error { color:#b00020; padding:15px; }
+    /* loading / error */
+    #loading { text-align:center; padding:30px 0; color:#666; }
+    #error { color:#b00020; padding:15px; display:none; }
   </style>
 </head>
 <body>
-
+  <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
-    <div class="container-fluid">
+    <div class="container">
       <a class="navbar-brand" href="#">PERFORMANCE BAN-TAN</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
         <span class="navbar-toggler-icon"></span>
@@ -110,26 +122,25 @@
               <li><a class="dropdown-item" href="#">Rangking B2B</a></li>
             </ul>
           </li>
-          <!-- other menus omitted for brevity -->
         </ul>
       </div>
     </div>
   </nav>
 
-  <main class="container">
+  <main class="container container-main">
     <div class="page-header">
       <img src="PERFORMANCE TEAM.png" alt="" style="height:42px;">
       <div>
         <div class="page-title">Ranking Household — RANKING HSA</div>
-        <small class="text-muted">Data diambil dari Google Sheets (ID spreadsheet &gt; RANKING HSA)</small>
+        <small class="text-muted">Meniru layout & warna sheet — INDEX | TARGET | [NAMA] → Growth Point</small>
       </div>
     </div>
 
     <div id="loading">Memuat data dari Google Sheets…</div>
-    <div id="error" class="d-none"></div>
+    <div id="error"></div>
 
-    <div class="table-responsive d-none" id="tableWrap">
-      <table class="rank-table" id="rankTable">
+    <div class="rank-wrapper d-none" id="rankWrap">
+      <table class="rank-table" id="rankTable" aria-describedby="loading">
         <thead id="tableHead"></thead>
         <tbody id="tableBody"></tbody>
       </table>
@@ -137,118 +148,175 @@
   </main>
 
   <script>
-    // --- KONFIGURASI: ganti sesuai spreadsheet Anda ---
+    // CONFIG
     const SPREADSHEET_ID = '1nJ5FQ4A9sd4FsxRXuAMr42eHalnd0N2Rm7dK_05Filg';
     const SHEET_NAME = 'RANKING HSA';
-    // endpoint gviz JSON (tidak memerlukan API key jika sheet dipublikasikan ke publik)
     const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json`;
 
-    // fetch gviz JSON and parse it
     fetch(GVIZ_URL)
       .then(r => r.text())
       .then(text => {
-        // gviz returns something like: /*O_o*/\ngoogle.visualization.Query.setResponse({...});
         const jsonText = text.replace(/^[\s\S]*?setResponse\(|\);?\s*$/g, '');
         const data = JSON.parse(jsonText);
-        buildTableFromGviz(data.table);
+        renderNiceTable(data.table);
       })
       .catch(err => {
-        document.getElementById('loading').classList.add('d-none');
+        document.getElementById('loading').style.display = 'none';
         const e = document.getElementById('error');
-        e.classList.remove('d-none');
-        e.textContent = 'Gagal memuat sheet. Pastikan sheet dibuat public / dapat diakses. Error: ' + err.message;
+        e.style.display = 'block';
+        e.textContent = 'Gagal memuat sheet. Pastikan sheet dipublikasikan (Anyone with link can view). Error: ' + err.message;
       });
 
-    function buildTableFromGviz(table) {
-      document.getElementById('loading').classList.add('d-none');
-
+    function renderNiceTable(table) {
+      document.getElementById('loading').style.display = 'none';
       const cols = table.cols.map(c => c.label || c.id || '');
       const rows = table.rows || [];
 
-      // Build thead
+      // Heuristic: assume first two columns are INDEX & TARGET, remaining are agent columns
+      // If sheet has an extra leading empty column, skip empties
+      let startIdx = 0;
+      // remove leading empty column labels if present
+      while (startIdx < cols.length && (!cols[startIdx] || cols[startIdx].trim() === '')) startIdx++;
+      // Expect first meaningful col = "INDEX"
+      // We'll take INDEX = cols[startIdx] and TARGET = cols[startIdx+1]; agents start from startIdx+2
+      const idxCol = startIdx;
+      const targetCol = startIdx + 1;
+      const agentColsStart = startIdx + 2;
+
+      const agentNames = cols.slice(agentColsStart).map(s => s || '');
+
+      // Build THEAD with two header rows
       const thead = document.getElementById('tableHead');
-      const trHead = document.createElement('tr');
+      thead.innerHTML = '';
 
-      cols.forEach((label, i) => {
+      const topRow = document.createElement('tr');
+      topRow.className = 'top-row';
+
+      // INDEX header spanning two rows vertically (we'll simulate by having empty cell in sub-row)
+      const thIndex = document.createElement('th');
+      thIndex.className = 'idx';
+      thIndex.rowSpan = 2;
+      thIndex.innerHTML = 'INDEX';
+      topRow.appendChild(thIndex);
+
+      const thTarget = document.createElement('th');
+      thTarget.className = 'target';
+      thTarget.rowSpan = 2;
+      thTarget.innerHTML = 'TARGET';
+      topRow.appendChild(thTarget);
+
+      // For each agent: top header = name, will span 1 row (we have two header rows total)
+      agentNames.forEach(name => {
         const th = document.createElement('th');
-        th.textContent = label;
-        trHead.appendChild(th);
+        th.textContent = (name || '').toUpperCase();
+        th.style.minWidth = '80px';
+        topRow.appendChild(th);
       });
-      thead.appendChild(trHead);
+      thead.appendChild(topRow);
 
-      // Build tbody
+      // Second header row: "Growth Point" repeated under each agent
+      const subRow = document.createElement('tr');
+      subRow.className = 'sub-row';
+      // NOTE: no cells for INDEX & TARGET because they used rowspan=2
+      agentNames.forEach(_ => {
+        const th = document.createElement('th');
+        th.textContent = 'Growth Point';
+        subRow.appendChild(th);
+      });
+      thead.appendChild(subRow);
+
+      // Build body
       const tbody = document.getElementById('tableBody');
       tbody.innerHTML = '';
 
-      rows.forEach((r, rowIndex) => {
+      // Helper to check if a row is a group header like "KPI B2C"
+      function isGroupHeader(row) {
+        // if first cell has text and rest are mostly empty -> group header
+        const c0 = row.c[idxCol];
+        if (!c0 || !c0.v) return false;
+        const v = ('' + c0.v).trim();
+        if (!v) return false;
+        // common group header keywords in your sheet
+        const keywords = ['KPI', 'POINT RANKING', 'KPI B2C', 'KPI B2B', 'KPI 12 PI LATEN'];
+        for (let k of keywords) if (v.toUpperCase().startsWith(k.toUpperCase())) return true;
+        // also treat rows where most other cells empty
+        const otherPopulated = row.c.slice(idxCol+1).filter(x=>x && (x.v!==null && x.v!==undefined && x.v!== '')).length;
+        if (otherPopulated <= 1 && v.length>0) return true;
+        return false;
+      }
+
+      rows.forEach((r, rIndex) => {
+        // If group header: render a full-width tr with group-header class
+        if (isGroupHeader(r)) {
+          const trg = document.createElement('tr');
+          const tdg = document.createElement('td');
+          tdg.colSpan = 2 + agentNames.length;
+          tdg.className = 'group-header';
+          tdg.textContent = (r.c[idxCol] && r.c[idxCol].v) ? r.c[idxCol].v : '';
+          trg.appendChild(tdg);
+          tbody.appendChild(trg);
+          return;
+        }
+
+        // Otherwise create normal data row
         const tr = document.createElement('tr');
 
-        r.c.forEach((cell, colIndex) => {
+        // INDEX cell (left)
+        const tdIndex = document.createElement('td');
+        tdIndex.className = 'idx';
+        const idxVal = (r.c[idxCol] && (r.c[idxCol].v !== null && r.c[idxCol].v !== undefined)) ? r.c[idxCol].v : (r.c[idxCol] && r.c[idxCol].f ? r.c[idxCol].f : '');
+        tdIndex.textContent = idxVal || '';
+        tr.appendChild(tdIndex);
+
+        // TARGET cell
+        const tdTarget = document.createElement('td');
+        const tVal = (r.c[targetCol] && (r.c[targetCol].v !== null && r.c[targetCol].v !== undefined)) ? r.c[targetCol].v : (r.c[targetCol] && r.c[targetCol].f ? r.c[targetCol].f : '');
+        // If target looks like the word TARGET or numeric flag, style red
+        if (String(tVal).toUpperCase().includes('TARGET') || String(tVal).trim() === '') {
+          tdTarget.className = 'target cell-target';
+        } else {
+          tdTarget.className = 'target';
+        }
+        tdTarget.textContent = tVal || '';
+        tr.appendChild(tdTarget);
+
+        // Agent columns: from agentColsStart .. agentColsStart+N
+        for (let ci = agentColsStart; ci < agentColsStart + agentNames.length; ci++) {
+          const cell = r.c[ci];
+          let raw = '';
+          if (cell) {
+            if (cell.v !== null && cell.v !== undefined) raw = cell.v;
+            else if (cell.f) raw = cell.f;
+          }
           const td = document.createElement('td');
-          let value = (cell && ('v' in cell)) ? cell.v : (cell && cell.f) ? cell.f : '';
 
-          // Format if value is null/empty
-          if (value === null || value === undefined) value = '';
-
-          // Apply custom styling rules to mimic sheet look
-          // Example heuristics:
-          // - If header-like (first column text equals "KPI B2C" etc): make group header row
-          if (colIndex === 0 && typeof value === 'string' && value.trim().length > 0) {
-            // some rows in sheet may be group headers; we detect simple heuristic:
-            const vTrim = value.trim();
-            if (vTrim === 'KPI B2C' || vTrim === 'KPI B2B' || vTrim === 'KPI 12 PI LATEN') {
-              // full-width group header: create special row
-              const groupTr = document.createElement('tr');
-              const groupTd = document.createElement('td');
-              groupTd.colSpan = cols.length;
-              groupTd.className = 'group-header';
-              groupTd.textContent = vTrim;
-              groupTr.appendChild(groupTd);
-              tbody.appendChild(groupTr);
-              return; // skip adding normal cells for this original row
+          // Format: if numeric -> gp class
+          if (typeof raw === 'number') {
+            td.className = 'gp ' + (raw > 0 ? 'positive' : (raw < 0 ? 'negative' : 'neutral'));
+            td.textContent = raw;
+          } else {
+            // try parse leading number inside string like "-2" or "3 Point"
+            const m = ((''+raw).match(/-?\d+/) || [null])[0];
+            if (m !== null && m !== undefined) {
+              const num = parseInt(m,10);
+              td.className = 'gp ' + (num > 0 ? 'positive' : (num < 0 ? 'negative' : 'neutral'));
+              // show original formatting if present, else number
+              td.textContent = ((''+raw).trim() === '' ? '' : (''+raw));
+            } else {
+              // non-numeric: just show as text
+              td.textContent = raw || '';
+              // Keep text left-aligned for index-like rows: but for consistency center small bullets/names
+              td.style.textAlign = 'center';
             }
           }
 
-          // Example: if column label contains "TARGET" or cell value equals 'TARGET' -> red cell
-          const headerLabel = (cols[colIndex] || '').toUpperCase();
-          if (headerLabel.includes('TARGET') || (typeof value === 'string' && value.toUpperCase() === 'TARGET')) {
-            td.className = 'cell-target';
-            td.textContent = value;
-            tr.appendChild(td);
-            return;
-          }
-
-          // If value is numeric: style positive/negative
-          if (typeof value === 'number') {
-            td.textContent = value;
-            td.className = 'gp ' + (value > 0 ? 'positive' : (value < 0 ? 'negative' : 'neutral'));
-            tr.appendChild(td);
-            return;
-          }
-
-          // If formatted string like "-2 Point" or "3 Point", try parse leading number
-          if (typeof value === 'string' && value.match(/-?\d+/)) {
-            const numMatch = value.match(/-?\d+/);
-            const n = parseInt(numMatch[0], 10);
-            if (!isNaN(n)) {
-              td.textContent = value;
-              td.className = 'gp ' + (n > 0 ? 'positive' : (n < 0 ? 'negative' : 'neutral'));
-              tr.appendChild(td);
-              return;
-            }
-          }
-
-          // Default: plain text
-          td.textContent = value;
           tr.appendChild(td);
-        });
+        }
 
-        // push row to tbody
         tbody.appendChild(tr);
       });
 
-      // show table
-      document.getElementById('tableWrap').classList.remove('d-none');
+      document.getElementById('rankWrap').classList.remove('d-none');
     }
   </script>
 
