@@ -17,9 +17,9 @@
       --muted:#6b6b6b;
       --light-gray:#f7f7f7;
       --cell-border:#e6e6e6;
-      --idx-w:40px;    /* bullet column (A) */
-      --idx-text-w:220px; /* INDEX text column (B) */
-      --target-w:90px;  /* TARGET column (C) */
+      --colA-w:40px;    /* bullet column (A) */
+      --colB-w:220px; /* INDEX text column (B) */
+      --colC-w:90px;  /* TARGET column (C) */
       --agent-min-w:60px; /* min width per agent subcol */
     }
 
@@ -44,15 +44,16 @@
       vertical-align:middle;
       padding:8px 6px;
       font-size:13px;
+      word-break:break-word;
     }
 
     /* left columns widths: A (bullet), B (INDEX text), C (TARGET) */
-    th.col-bullet, td.col-bullet { width: var(--idx-w); min-width: var(--idx-w); max-width: var(--idx-w); text-align:center; background:#fff; }
-    th.col-index, td.col-index { width: var(--idx-text-w); min-width: var(--idx-text-w); max-width: var(--idx-text-w); text-align:left; background:var(--light-gray); font-weight:700; padding:10px; }
-    th.col-target, td.col-target { width: var(--target-w); min-width: var(--target-w); max-width: var(--target-w); text-align:center; font-weight:700; }
+    th.col-bullet, td.col-bullet { width: var(--colA-w); min-width: var(--colA-w); max-width: var(--colA-w); text-align:center; background:#fff; }
+    th.col-index, td.col-index { width: var(--colB-w); min-width: var(--colB-w); max-width: var(--colB-w); text-align:left; background:var(--light-gray); font-weight:700; padding:10px; }
+    th.col-target, td.col-target { width: var(--colC-w); min-width: var(--colC-w); max-width: var(--colC-w); text-align:center; font-weight:700; }
 
     /* agent subcolumns: each group has 3 subcols; we set min width for each subcol */
-    th.agent-sub, td.agent-sub { min-width: var(--agent-min-w); max-width: 160px; text-align:center; padding:8px; word-break:break-word; }
+    th.agent-sub, td.agent-sub { min-width: var(--agent-min-w); max-width: 160px; text-align:center; padding:8px; }
 
     /* header styles */
     thead tr.top th { background:var(--black); color:#fff; font-weight:700; font-size:12px; text-align:center; padding:10px 6px; }
@@ -73,7 +74,6 @@
     td.gp.negative { color: var(--red); }
     td.gp.neutral { color: var(--muted); }
 
-    /* merged index-target style (when we set colspan=2) */
     td.idx-merged { background:var(--light-gray); font-weight:700; padding:10px; }
 
     @media (max-width: 900px) {
@@ -107,7 +107,7 @@
       <img src="PERFORMANCE TEAM.png" alt="" style="height:42px;">
       <div>
         <div class="page-title">Ranking Household — RANKING HSA</div>
-        <div class="small-note">Meniru merge kolom: A:B=INDEX, C=TARGET, D:F=YAYAT, ... (lihat instruksi)</div>
+        <div class="small-note">Mengikuti merge: INDEX A:B, TARGET C, grup agent 3 kolom (nilai tampil di tengah grup)</div>
       </div>
     </div>
 
@@ -123,12 +123,12 @@
   </main>
 
   <script>
-    // CONFIG — pastikan sheet dipublikasikan / anyone with link can view
+    // CONFIG — sheet harus dipublikasikan / anyone with link can view
     const SPREADSHEET_ID = '1nJ5FQ4A9sd4FsxRXuAMr42eHalnd0N2Rm7dK_05Filg';
     const SHEET_NAME = 'RANKING HSA';
     const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json`;
 
-    // Rows for which INDEX and TARGET must be merged (B:C merged) — from your list
+    // Rows that should have INDEX and TARGET merged (list dari Anda)
     const MERGE_INDEX_TARGET_ROWS = [
       'B2C CX CUSTOMER (Time to Repair)',
       'B2C CX CUSTOMER (Management)',
@@ -139,14 +139,17 @@
       'B2B CX CUSTOMER (Time to Repair)',
       'B2B CX CUSTOMER (Management)',
       'B2B Quality of Service Assurance'
-    ];
+    ].map(s => s.toUpperCase());
+
+    // agent groups (names used to detect header columns automatically)
+    const AGENT_NAMES = ['YAYAT','EKA','VICKY','JAMAL','DADY','RISMAN','HERLANDO','DANANG','GUNTUR','YANTO'];
 
     fetch(GVIZ_URL)
       .then(r => r.text())
       .then(text => {
         const jsonText = text.replace(/^[\s\S]*?setResponse\(|\);?\s*$/g, '');
         const data = JSON.parse(jsonText);
-        buildMergedTable(data.table);
+        buildMergedTableAutoDetect(data.table);
       })
       .catch(err => {
         document.getElementById('loading').style.display = 'none';
@@ -155,42 +158,55 @@
         e.textContent = 'Gagal memuat sheet. Pastikan sheet dipublikasikan. Error: ' + err.message;
       });
 
-    function buildMergedTable(table) {
+    function buildMergedTableAutoDetect(table) {
       document.getElementById('loading').style.display = 'none';
-      const cols = table.cols.map(c => c.label || c.id || '');
+      const cols = table.cols.map(c => (c && c.label) ? c.label.toString() : '');
       const rows = table.rows || [];
 
-      // mapping from user: A:B = INDEX ; C = TARGET ; D:F = YAYAT ; G:I = EKA ; J:L = VICKY ; M:O = JAMAL ; P:R = DADY ; S:U = RISMAN ; V:X = HERLANDO ; Y:AA = DANANG ; AB:AD = GUNTUR ; AF:AH = YANTO
-      // We'll detect start index skipping empty leading columns
+      // detect first non-empty column index (skip leading empties)
       let start = 0;
       while (start < cols.length && (!cols[start] || cols[start].trim() === '')) start++;
 
-      const idxCol = start;           // A
-      const idxTextCol = start + 1;   // B
-      const targetCol = start + 2;    // C
-      const agentGroups = [
-        {name: 'YAYAT', start: start + 3, span:3}, // D:F
-        {name: 'EKA',  start: start + 6, span:3}, // G:I
-        {name: 'VICKY',start: start + 9, span:3}, // J:L
-        {name: 'JAMAL',start: start + 12, span:3}, // M:O
-        {name: 'DADY', start: start + 15, span:3}, // P:R
-        {name: 'RISMAN',start: start + 18, span:3}, // S:U
-        {name: 'HERLANDO',start: start + 21, span:3}, // V:X
-        {name: 'DANANG',start: start + 24, span:3}, // Y:AA
-        {name: 'GUNTUR',start: start + 27, span:3}, // AB:AD
-        {name: 'YANTO',start: start + 30, span:3} // AF:AH
-      ];
+      // We'll try to find where INDEX (B) and TARGET (C) live.
+      // Heuristic: INDEX is the header that equals 'INDEX' (or similar) somewhere near start.
+      // But your sheet uses A:B = INDEX (bullet + text), C = TARGET, agent groups after.
+      // We'll find positions of agent headers using AGENT_NAMES and map groups to span=3 each.
+      const colUpper = cols.map(c => (c || '').toString().toUpperCase());
 
-      // Build THEAD: top row (INDEX colspan=2, TARGET rowspan=2, agent name colspan=3)
+      // find index of first agent in cols by searching AGENT_NAMES
+      const agentPositions = [];
+      for (const name of AGENT_NAMES) {
+        const idx = colUpper.findIndex(c => c.includes(name));
+        agentPositions.push( idx >= 0 ? idx : null );
+      }
+
+      // If detection failed (common), fall back to assumed layout relative to 'start':
+      // assume: start = A, start+1 = B, start+2 = C, then groups D:F, G:I, ...
+      const fallbackAgentStart = start + 3; // D
+      const fallbackPositions = AGENT_NAMES.map((_,i) => fallbackAgentStart + i*3);
+
+      // Choose final positions: if detected use detected pos, else fallback
+      const finalAgentPositions = agentPositions.map((p,i) => p === null ? fallbackPositions[i] : p);
+
+      // Now build agentGroups array with start index and span=3
+      const agentGroups = AGENT_NAMES.map((name,i) => ({ name, start: finalAgentPositions[i], span: 3 }));
+
+      // determine idx columns: A (bullet) likely at start, B at start+1, C at start+2
+      const idxCol = start;          // A
+      const idxTextCol = start + 1;  // B (INDEX text)
+      const targetCol = start + 2;   // C (TARGET)
+
+      // Build THEAD
       const thead = document.getElementById('tableHead');
       thead.innerHTML = '';
 
       const top = document.createElement('tr'); top.className = 'top';
-      const thIndex = document.createElement('th'); thIndex.colSpan = 2; thIndex.className = 'col-index'; thIndex.textContent = 'INDEX';
-      const thTarget = document.createElement('th'); thTarget.rowSpan = 2; thTarget.className = 'col-target'; thTarget.textContent = 'TARGET';
-      top.appendChild(thIndex); top.appendChild(thTarget);
+      const thA = document.createElement('th'); thA.className = 'col-bullet'; thA.colSpan = 1; thA.textContent = ''; // placeholder for bullet header
+      const thB = document.createElement('th'); thB.className = 'col-index'; thB.colSpan = 1; thB.textContent = 'INDEX';
+      const thC = document.createElement('th'); thC.className = 'col-target'; thC.rowSpan = 2; thC.textContent = 'TARGET';
+      top.appendChild(thA); top.appendChild(thB); top.appendChild(thC);
 
-      // add agent groups
+      // For each agent group, top header = agent name spanning 3 subcols
       agentGroups.forEach(g => {
         const th = document.createElement('th');
         th.colSpan = g.span;
@@ -200,14 +216,13 @@
       });
       thead.appendChild(top);
 
-      // sub header row: for the INDEX colspan=2 we must add two th placeholders (bullet + index text)
       const sub = document.createElement('tr'); sub.className = 'sub';
-      const thBullet = document.createElement('th'); thBullet.className = 'col-bullet'; thBullet.textContent = ''; // bullet column header empty
-      const thIdxText = document.createElement('th'); thIdxText.className = 'col-index'; thIdxText.textContent = ''; // left blank; content appears in body
-      sub.appendChild(thBullet); sub.appendChild(thIdxText);
-      // for each agent group, create a single th spanning group.span and label "Growth Point"
-      agentGroups.forEach(g => {
-        const th = document.createElement('th'); th.colSpan = g.span; th.className = 'agent-sub'; th.textContent = 'Growth Point';
+      // placeholders for A & B since TARGET had rowspan
+      const phA = document.createElement('th'); phA.className = 'col-bullet'; phA.textContent = '';
+      const phB = document.createElement('th'); phB.className = 'col-index'; phB.textContent = '';
+      sub.appendChild(phA); sub.appendChild(phB);
+      agentGroups.forEach(() => {
+        const th = document.createElement('th'); th.className = 'agent-sub'; th.colSpan = 3; th.textContent = 'Growth Point';
         sub.appendChild(th);
       });
       thead.appendChild(sub);
@@ -216,9 +231,9 @@
       const tbody = document.getElementById('tableBody');
       tbody.innerHTML = '';
 
-      // helper detect group header rows like 'KPI B2C' or 'KPI B2B'
       function isGroupHeader(r) {
-        const v = r.c[idxCol] && (r.c[idxCol].v !== null && r.c[idxCol].v !== undefined) ? (''+r.c[idxCol].v).trim() : '';
+        const vObj = r.c[idxCol];
+        const v = vObj && (vObj.v !== null && vObj.v !== undefined) ? (''+vObj.v).trim() : '';
         if (!v) return false;
         const keys = ['KPI','POINT RANKING','KPI B2C','KPI B2B','KPI 12 PI LATEN'];
         for (let k of keys) if (v.toUpperCase().startsWith(k.toUpperCase())) return true;
@@ -229,7 +244,9 @@
         if (isGroupHeader(r)) {
           const tr = document.createElement('tr');
           const td = document.createElement('td');
-          td.colSpan = 2 + 1 + agentGroups.reduce((a,b)=>a+b.span,0); // 2 idx + target + all agent subcols
+          // compute total colspan: A (1) + B (1) + C (1) + total agent subcols
+          const totalAgentSubcols = agentGroups.reduce((s,g)=>s + g.span,0);
+          td.colSpan = 3 + totalAgentSubcols - 1; // because we created A,B and TARGET occupies one header already; keep safe wide colspan
           td.className = 'group-header';
           td.textContent = r.c[idxCol] && r.c[idxCol].v ? r.c[idxCol].v : '';
           tr.appendChild(td);
@@ -239,86 +256,93 @@
 
         const tr = document.createElement('tr');
 
-        // COL A: bullet (small square)
-        const tdBullet = document.createElement('td'); tdBullet.className = 'col-bullet';
-        // If first IDX cell not empty but equal to bullet marker or special, show bullet; else if index text present show bullet char
-        tdBullet.textContent = '▪️';
-        tr.appendChild(tdBullet);
+        // Column A: bullet
+        const tdA = document.createElement('td'); tdA.className = 'col-bullet';
+        tdA.textContent = '▪️';
+        tr.appendChild(tdA);
 
-        // INDEX text in B
-        const idxTextRaw = r.c[idxTextCol] && (r.c[idxTextCol].v !== null && r.c[idxTextCol].v !== undefined) ? r.c[idxTextCol].v : (r.c[idxTextCol] && r.c[idxTextCol].f ? r.c[idxTextCol].f : '');
-        const idxText = (''+ (idxTextRaw || '') ).trim();
+        // Fetch index text (col B)
+        const idxRawObj = r.c[idxTextCol];
+        const idxText = idxRawObj && (idxRawObj.v !== null && idxRawObj.v !== undefined) ? (''+idxRawObj.v).trim() : (idxRawObj && idxRawObj.f ? ''+idxRawObj.f : '');
 
-        // TARGET raw (C)
-        const tRaw = r.c[targetCol] && (r.c[targetCol].v !== null && r.c[targetCol].v !== undefined) ? r.c[targetCol].v : (r.c[targetCol] && r.c[targetCol].f ? r.c[targetCol].f : '');
-        const tText = (''+(tRaw||'')).trim();
+        // Fetch target raw (col C)
+        const tRawObj = r.c[targetCol];
+        const tText = tRawObj && (tRawObj.v !== null && tRawObj.v !== undefined) ? r.c[targetCol].v : (tRawObj && tRawObj.f ? tRawObj.f : '');
 
-        // If this index row should be merged across B:C (INDEX text + TARGET merged), create one td with colspan=2 and skip separate target cell
-        if (MERGE_INDEX_TARGET_ROWS.includes(idxText)) {
+        // Merge B:C for rows in MERGE_INDEX_TARGET_ROWS (based on idxText)
+        if (MERGE_INDEX_TARGET_ROWS.includes((idxText||'').toUpperCase())) {
           const tdMerge = document.createElement('td');
           tdMerge.colSpan = 2;
           tdMerge.className = 'idx-merged';
-          tdMerge.textContent = idxText;
+          tdMerge.textContent = idxText || '';
           tr.appendChild(tdMerge);
         } else {
-          // normal: create INDEX cell and TARGET cell separately
-          const tdIdx = document.createElement('td'); tdIdx.className = 'col-index';
-          tdIdx.textContent = idxText;
-          tr.appendChild(tdIdx);
+          const tdB = document.createElement('td'); tdB.className = 'col-index'; tdB.textContent = idxText || '';
+          tr.appendChild(tdB);
 
-          const tdTarget = document.createElement('td'); tdTarget.className = 'col-target';
-          tdTarget.textContent = tText;
-          // style TARGET red if it contains 'TARGET' text or empty as in original sheet — keep heuristic
-          if (!tText || String(tText).toUpperCase().includes('TARGET')) {
-            tdTarget.classList.add('cell-target');
+          const tdC = document.createElement('td'); tdC.className = 'col-target';
+          tdC.textContent = (tText!==undefined && tText!==null) ? tText : '';
+          if (!tText || (''+tText).toUpperCase().includes('TARGET')) {
+            tdC.classList.add('cell-target');
           }
-          tr.appendChild(tdTarget);
+          tr.appendChild(tdC);
         }
 
-        // For each agent group (each has 3 subcols), we will fill the middle subcol with value (if present), leaving left & right empty for spacing (reproducing sheet)
+        // For each agent group: search across the group's sheet columns for any non-empty cell.
+        // If found, put that displayed value into the group's middle subcol (k===1). This makes values "follow the merge".
         agentGroups.forEach(g => {
-          const subCells = [];
-          for (let k = 0; k < g.span; k++) {
+          const subTds = [];
+          let foundVal = null;
+          let foundRaw = null;
+          for (let k=0;k<g.span;k++) {
+            const sheetColIdx = g.start + k;
+            const cellObj = r.c[sheetColIdx];
+            let raw = '';
+            if (cellObj) {
+              if (cellObj.v !== null && cellObj.v !== undefined) raw = cellObj.v;
+              else if (cellObj.f) raw = cellObj.f;
+            }
+            if ((raw !== '' && raw !== null && raw !== undefined) && foundVal === null) {
+              // store the first non-empty raw we encounter in the group
+              foundVal = raw;
+              foundRaw = raw;
+            }
+          }
+
+          // create group's three subcells; put the foundVal in middle one (k===1)
+          for (let k=0;k<g.span;k++) {
             const td = document.createElement('td');
             td.className = 'agent-sub';
-            // compute which column index this maps to in sheet: g.start + k
-            const sheetColIdx = g.start + k;
-            // get raw value
-            const valObj = r.c[sheetColIdx];
-            let raw = '';
-            if (valObj) {
-              if (valObj.v !== null && valObj.v !== undefined) raw = valObj.v;
-              else if (valObj.f) raw = valObj.f;
-            }
-            // We only show the value in the middle subcol (k === 1). For other subcols keep blank to mimic spacing.
-            if (k === 1) {
-              // format numeric & color
-              if (typeof raw === 'number') {
+            if (k === 1 && foundVal !== null) {
+              // format number styling if numeric
+              if (typeof foundVal === 'number') {
                 td.classList.add('gp');
-                td.classList.add(raw > 0 ? 'positive' : (raw < 0 ? 'negative' : 'neutral'));
-                td.textContent = raw;
+                td.classList.add(foundVal > 0 ? 'positive' : (foundVal < 0 ? 'negative' : 'neutral'));
+                td.textContent = foundVal;
               } else {
-                const m = ((''+raw).match(/-?\d+/) || [null])[0];
+                // if string contains number, color accordingly
+                const m = ((''+foundVal).match(/-?\d+/) || [null])[0];
                 if (m !== null && m !== undefined) {
                   const n = parseInt(m,10);
                   td.classList.add('gp');
                   td.classList.add(n > 0 ? 'positive' : (n < 0 ? 'negative' : 'neutral'));
-                  td.textContent = (''+raw).trim();
+                  td.textContent = (''+foundVal).trim();
                 } else {
-                  td.textContent = (raw || '');
+                  // non-numeric text like #DIV/0!, show as-is (no gp class)
+                  td.textContent = ''+foundVal;
                 }
               }
             }
-            subCells.push(td);
+            subTds.push(td);
           }
-          // append the group's subcells (left, middle, right)
-          subCells.forEach(td => tr.appendChild(td));
+
+          // append the three subcells into tr
+          subTds.forEach(t => tr.appendChild(t));
         });
 
         tbody.appendChild(tr);
       });
 
-      // show table
       document.getElementById('rankWrap').classList.remove('d-none');
     }
   </script>
