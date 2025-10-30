@@ -14,53 +14,81 @@ body {
       background-color: #fff;
     }
 
-    /* === NAVBAR === */
-    .navbar-brand {
-      font-weight: bold;
-      font-size: 24px;
-      color: #444;
-    }
+    /* NAVBAR COMPACT */
+.navbar-compact {
+  background: #fff;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
 
-    .nav-link {
-      color: #333 !important;
-      transition: all 0.3s ease;
-      padding: 8px 15px;
-      border-radius: 6px;
-    }
+.navbar-compact .container {
+  max-width: 1200px; /* batasi lebar navbar supaya tidak terlalu melebar */
+}
 
-    /* Efek hover di menu utama */
-    .nav-link:hover {
-      background-color: #f0f0f0;
-      color: #007bff !important;
-    }
+.navbar-compact .navbar-brand {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:700;
+  color:#222;
+  font-size:16px;
+  padding-left: 0;
+}
 
-    /* Dropdown item hover */
-    .dropdown-menu a.dropdown-item {
-      font-size: 14px;
-      color: #333;
-      transition: all 0.2s ease;
-    }
+.navbar-compact .navbar-brand img { height:34px; width:auto; display:block; }
 
-    .dropdown-menu a.dropdown-item:hover {
-      background-color: #007bff;
-      color: white;
-    }
+.navbar-compact .navbar-toggler {
+  border: 1px solid rgba(0,0,0,0.06);
+  padding:6px 8px;
+  margin-right:6px;
+}
 
-    /* Submenu */
-    .dropdown-submenu {
-      position: relative;
-    }
+/* lebih compact padding untuk link */
+.navbar-compact .nav-link {
+  color:#333 !important;
+  padding:6px 10px;
+  border-radius:6px;
+  transition: all .12s ease;
+  font-size:14px;
+}
 
-    .dropdown-submenu > .dropdown-menu {
-      top: 0;
-      left: 100%;
-      margin-left: 0.1rem;
-      margin-right: 0.1rem;
-    }
+/* kurangi jarak antar item */
+.navbar-compact .navbar-nav {
+  gap:6px;
+  align-items:center;
+}
 
-    .dropdown-submenu:hover > .dropdown-menu {
-      display: block;
-    }
+/* dropdown style */
+.navbar-compact .dropdown-menu {
+  border-radius:8px;
+  min-width:200px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.navbar-compact .dropdown-item {
+  padding:8px 12px;
+  font-size:14px;
+}
+
+/* hover */
+.navbar-compact .nav-link:hover,
+.navbar-compact .dropdown-item:hover {
+  background: #f0f6ff;
+  color: var(--header-blue) !important;
+}
+
+/* desktop: buka dropdown on hover (opsional) */
+@media (min-width: 992px) {
+  .navbar-compact .nav-item.dropdown:hover > .dropdown-menu { display:block; }
+}
+
+/* mobile tweak: buat nav full-width when collapsed */
+@media (max-width: 767px) {
+  .navbar-compact .container { padding-left: 10px; padding-right: 10px; }
+  .navbar-compact .nav-link { padding:10px 12px; }
+}
+
   
     :root{
       --black:#0b0b0b;
@@ -140,56 +168,64 @@ body {
   </style>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="index.html"><img src="PERFORMANCE TEAM.png" style="height: 40px; margin-right: 10px;">PERFORMANCE BAN-TAN</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
+  <nav class="navbar navbar-expand-lg navbar-compact fixed-top shadow-sm" aria-label="Main navigation">
+  <div class="container">
+    <a class="navbar-brand" href="index.html" aria-label="Performance Ban-Tan">
+      <img src="PERFORMANCE TEAM.png" alt="Logo Performance Team">
+      <span>PERFORMANCE BAN-TAN</span>
+    </a>
 
-          <!-- RANGKING -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="racingDropdown" role="button" data-bs-toggle="dropdown">Rangking</a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="rangking-household.html">Rangking Household</a></li>
-              <li><a class="dropdown-item" href="#">Rangking B2C</a></li>
-              <li><a class="dropdown-item" href="#">Rangking B2B</a></li>
-            </ul>
-          </li>
-          <!-- KPI 12 PI LATEN -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="kpi12piDropdown" role="button" data-bs-toggle="dropdown">KPI 12 PI Laten</a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#">Dashboard 12 PI Laten</a></li>
-              <li><a class="dropdown-item" href="#">Ranking PI Laten HSA</a></li>
-              <li><a class="dropdown-item" href="#">Indikator Not ACH</a></li>
-              <li><a class="dropdown-item" href="#">Improvement PI Laten</a></li>
-              <li><a class="dropdown-item" href="timeline-tower.html">TimeLine Tower</a></li>
-            </ul>
-          </li>
-          <!-- KPI B2C -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="kpiioanDropdown" role="button" data-bs-toggle="dropdown">KPI B2C</a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#">Dashboard B2C</a></li>
-              <li><a class="dropdown-item" href="#">Ranking B2C HSA</a></li>
-              <li><a class="dropdown-item" href="#">Ranking B2C Mitra</a></li>
-              <li><a class="dropdown-item" href="#">Indikator Not ACH</a></li>
-              <li><a class="dropdown-item" href="#">Improvement B2C</a></li>
-            </ul>
-          </li>
-          <!-- KPI NON SEKTOR B2B -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="kpiB2BDropdown" role="button" data-bs-toggle="dropdown">KPI Non Sektor B2B</a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#">HSI</a></li>
-              <li><a class="dropdown-item" href="#">DATIN</a></li>
-              <li><a class="dropdown-item" href="#">WIFI</a></li>
-              <li><a class="dropdown-item" href="#">OLO</a></li>
-            </ul>
-          </li>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavCompact" aria-controls="navbarNavCompact" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNavCompact">
+      <ul class="navbar-nav ms-auto">
+        <!-- RANGKING -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="racingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Rangking</a>
+          <ul class="dropdown-menu" aria-labelledby="racingDropdown">
+            <li><a class="dropdown-item" href="rangking-household.html">Rangking Household</a></li>
+            <li><a class="dropdown-item" href="#">Rangking B2C</a></li>
+            <li><a class="dropdown-item" href="#">Rangking B2B</a></li>
+          </ul>
+        </li>
+
+        <!-- KPI 12 PI LATEN -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="kpi12piDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">KPI 12 PI Laten</a>
+          <ul class="dropdown-menu" aria-labelledby="kpi12piDropdown">
+            <li><a class="dropdown-item" href="#">Dashboard 12 PI Laten</a></li>
+            <li><a class="dropdown-item" href="#">Ranking PI Laten HSA</a></li>
+            <li><a class="dropdown-item" href="#">Indikator Not ACH</a></li>
+            <li><a class="dropdown-item" href="#">Improvement PI Laten</a></li>
+            <li><a class="dropdown-item" href="timeline-tower.html">TimeLine Tower</a></li>
+          </ul>
+        </li>
+
+        <!-- KPI B2C -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="kpiB2C" role="button" data-bs-toggle="dropdown" aria-expanded="false">KPI B2C</a>
+          <ul class="dropdown-menu" aria-labelledby="kpiB2C">
+            <li><a class="dropdown-item" href="#">Dashboard B2C</a></li>
+            <li><a class="dropdown-item" href="#">Ranking B2C HSA</a></li>
+            <li><a class="dropdown-item" href="#">Ranking B2C Mitra</a></li>
+            <li><a class="dropdown-item" href="#">Indikator Not ACH</a></li>
+            <li><a class="dropdown-item" href="#">Improvement B2C</a></li>
+          </ul>
+        </li>
+
+        <!-- KPI Non Sektor B2B -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="kpiB2B" role="button" data-bs-toggle="dropdown" aria-expanded="false">KPI Non Sektor B2B</a>
+          <ul class="dropdown-menu" aria-labelledby="kpiB2B">
+            <li><a class="dropdown-item" href="#">HSI</a></li>
+            <li><a class="dropdown-item" href="#">DATIN</a></li>
+            <li><a class="dropdown-item" href="#">WIFI</a></li>
+            <li><a class="dropdown-item" href="#">OLO</a></li>
+          </ul>
+        </li>
+
           <!-- KPI WSA -->
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="kpiWSADropdown" role="button" data-bs-toggle="dropdown">KPI WSA</a>
