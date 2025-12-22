@@ -12,28 +12,23 @@
     :root { --primary-blue: #004085; --accent-blue: #007bff; }
     body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; margin: 0; }
     
-    /* NAVBAR */
     .navbar-brand { font-weight: bold; font-size: 24px; color: #444; }
     .nav-link { color: #333 !important; transition: 0.3s; padding: 8px 15px; border-radius: 6px; }
     .nav-link:hover { background-color: #f0f0f0; color: var(--accent-blue) !important; }
 
-    /* CONTENT AREA */
     .home-fullscreen {
       width: 100%; min-height: calc(100vh - 70px);
       background: url('homescreen.png') center center / contain no-repeat;
       background-color: #ffffff; display: flex; flex-direction: column; align-items: center; padding-top: 20px;
     }
 
-    /* LEADERBOARD */
-    .leaderboard-container { display: flex; gap: 20px; margin-bottom: 30px; justify-content: center; width: 100%; max-width: 1200px; }
+    .leaderboard-container { display: flex; gap: 20px; margin-bottom: 30px; justify-content: center; width: 100%; max-width: 1200px; flex-wrap: wrap; }
     .rank-card { background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); flex: 1; max-width: 250px; border-top: 5px solid #eee; }
-    .rank-1 { border-color: #ffd700; } .rank-2 { border-color: #c0c0c0; } 
+    .rank-1 { border-color: #ffd700; } .rank-2 { border-color: #c0c0c0; } .rank-3 { border-color: #cd7f32; }
 
-    /* TABLE STYLE */
     .dashboard-card { width: 95%; max-width: 1400px; background: white; border-radius: 20px; padding: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); margin-bottom: 50px; }
     .table-responsive { border-radius: 12px; overflow: hidden; }
     
-    /* Header Tabel: Biru Gelap, Tulisan Putih */
     .table thead th { 
       background-color: var(--primary-blue) !important; 
       color: #ffffff !important; 
@@ -61,7 +56,6 @@
 </head>
 <body>
 
-  <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
     <div class="container-fluid">
       <a class="navbar-brand" href="javascript:void(0)" onclick="location.reload()">
@@ -72,14 +66,19 @@
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Rangking</a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="javascript:void(0)" onclick="loadB2CData()">Rangking B2C</a></li>
+              <li><a class="dropdown-item" href="javascript:void(0)" onclick="loadB2CData('ioan banten')">Rangking B2C</a></li>
               <li><a class="dropdown-item" href="javascript:void(0)" onclick="loadB2BData()">Rangking B2B</a></li>
             </ul>
           </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">KPI</a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="javascript:void(0)" onclick="loadB2CData()">Dashboard B2C</a></li>
+              <li><a class="dropdown-item" href="#" data-bs-toggle="dropdown">Dashboard B2C</a>
+                <ul class="dropdown-menu dropdown-submenu">
+                  <li><a class="dropdown-item" href="javascript:void(0)" onclick="loadB2CData('ioan banten')">IOAN BANTEN</a></li>
+                  <li><a class="dropdown-item" href="javascript:void(0)" onclick="loadB2CData('ioan tangerang')">IOAN TANGERANG</a></li>
+                </ul>
+              </li>
               <li><a class="dropdown-item" href="javascript:void(0)" onclick="loadB2BData()">Dashboard B2B</a></li>
             </ul>
           </li>
@@ -113,7 +112,6 @@
         let html = "";
         
         if (sheetName === 'b2b') {
-          // KONFIGURASI B2B (Data A3:G54)
           const headers = ["INDIKATOR", "BOBOT", "TARGET", "BANTEN (KPI)", "TANGERANG (KPI)", "BANTEN (ACH)", "TANGERANG (ACH)"];
           const rowAch = 50; 
 
@@ -134,7 +132,6 @@
                       return `<tr>
                         ${filteredRow.map((cell, cIdx) => {
                           let className = cIdx === 0 ? 'sticky-col' : '';
-                          // Ganti Ikon dengan Ikon FontAwesome tanpa background warna
                           let val = (typeof cell === 'number' && cIdx > 1 && cIdx < 5) ? cell.toFixed(2) : 
                                     (cell === '✅' ? '<i class="fas fa-check-circle text-success"></i>' : 
                                     (cell === '❌' ? '<i class="fas fa-times-circle text-danger"></i>' : cell));
@@ -147,26 +144,71 @@
               </div>
             </div>`;
         } else {
-          // LOGIKA B2C
-          const rowAch = 29;
-          const names = data[0].slice(4);
-          const achs = data[rowAch].slice(4);
-          let performers = names.map((n, i) => ({ name: n, ach: achs[i], rank: parseInt(data[30][i+4]) })).filter(x => !isNaN(x.rank)).sort((a,b) => a.rank - b.rank);
+          // LOGIKA B2C (IOAN BANTEN & IOAN TANGERANG)
+          const rowAch = 33; // Baris 34 (TOTAL ACH)
+          const rowRank = 34; // Baris 35 (RANKING)
+          
+          const headers = data[5]; // Baris 6 (Header dengan nama-nama HSA)
+          const achs = data[rowAch]; // Baris 34 (Achievement)
+          const ranks = data[rowRank]; // Baris 35 (Ranking)
+
+          // Ekstrak nama HSA (mulai dari kolom D index 3)
+          const names = headers.slice(3).filter((h, i) => i % 2 === 0 && h && h !== '');
+          const performances = [];
+          
+          for (let i = 0; i < names.length; i++) {
+            const achIndex = 3 + (i * 2);
+            performances.push({
+              name: names[i],
+              ach: parseFloat(achs[achIndex]),
+              rank: parseInt(ranks[achIndex])
+            });
+          }
+          
+          const sorted = performances.filter(p => !isNaN(p.rank)).sort((a,b) => a.rank - b.rank);
 
           html += `<div class="leaderboard-container">`;
-          performers.slice(0, 3).forEach((p, idx) => { 
-            html += `<div class="rank-card rank-${idx+1}"><div class="small text-muted fw-bold">RANK ${p.rank}</div><h5 class="fw-bold my-2">${p.name}</h5><div class="h4 fw-bold text-primary">${parseFloat(p.ach).toFixed(2)}%</div></div>`; 
+          sorted.slice(0, 3).forEach((p, idx) => {
+            html += `<div class="rank-card rank-${idx+1}"><div class="small text-muted fw-bold">RANK ${p.rank}</div><h5 class="fw-bold my-2">${p.name}</h5><div class="h4 fw-bold text-primary">${p.ach.toFixed(2)}%</div></div>`;
           });
-          html += `</div><div class="dashboard-card"><h5 class="fw-bold mb-4 text-primary">DATA PENCAPAIAN KPI B2C</h5><div class="table-responsive"><table class="table table-sm table-bordered table-hover align-middle text-center" style="font-size: 11px;"><thead><tr>${data[0].slice(1).map((h, i) => `<th class="${i === 0 ? 'sticky-col' : ''}">${h}</th>`).join('')}</tr></thead><tbody>${data.slice(1, rowAch).map((row) => `<tr>${row.slice(1).map((cell, cIdx) => { let className = cIdx === 0 ? 'sticky-col' : ''; let val = typeof cell === 'number' && cIdx > 1 ? cell.toFixed(2) : cell; return `<td class="${className}">${val}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div></div>`;
+          html += `</div>`;
+
+          // Headers tabel: Indikator, Bobot, Target + nama-nama HSA
+          const tableHeaders = ['INDIKATOR', 'BOBOT', 'TARGET', ...headers.slice(3).slice(0, headers.slice(3).length).map((h, i) => h && h !== '' ? h : '')];
+          
+          html += `
+            <div class="dashboard-card">
+              <h5 class="fw-bold mb-4 text-primary"><i class="fas fa-table me-2"></i> ${title}</h5>
+              <div class="table-responsive">
+                <table class="table table-sm table-bordered table-hover align-middle text-center" style="font-size: 11px;">
+                  <thead><tr>${tableHeaders.filter(h => h !== '').map((h, i) => `<th class="${i === 0 ? 'sticky-col' : ''}">${h}</th>`).join('')}</tr></thead>
+                  <tbody>
+                    ${data.slice(6, rowAch).map((row) => {
+                      return `<tr>
+                        ${row.slice(0, 3 + headers.slice(3).length).map((cell, cIdx) => {
+                          let className = cIdx === 0 ? 'sticky-col' : '';
+                          let val = (typeof cell === 'number' && cIdx > 1) ? cell.toFixed(2) : 
+                                    (cell === '✅' ? '<i class="fas fa-check-circle text-success"></i>' : 
+                                    (cell === '❌' ? '<i class="fas fa-times-circle text-danger"></i>' : cell));
+                          return `<td class="${className}">${val}</td>`;
+                        }).join('')}
+                      </tr>`;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>`;
         }
         container.innerHTML = html;
       } catch (error) { alert("Gagal memuat data."); } finally { hideLoading(); }
     }
 
-    function loadB2CData() { loadSheetData('b2c', 'DATA PENCAPAIAN KPI B2C'); }
+    function loadB2CData(sheetName) { 
+      const title = sheetName === 'ioan banten' ? 'DATA PENCAPAIAN KPI B2C - IOAN BANTEN' : 'DATA PENCAPAIAN KPI B2C - IOAN TANGERANG';
+      loadSheetData(sheetName, title); 
+    }
     function loadB2BData() { loadSheetData('b2b', 'DATA PENCAPAIAN KPI B2B'); }
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>
 </html>
