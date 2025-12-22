@@ -3,84 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PERFORMANCE BAN-TAN - Dashboard Team</title>
+  <title>PERFORMANCE BAN-TAN - Dashboard Integrated</title>
   
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    :root {
-      --primary-blue: #004085; /* Biru Gelap untuk Header */
-      --accent-blue: #007bff;
-    }
+    :root { --primary-blue: #004085; --accent-blue: #007bff; }
+    body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; margin: 0; }
 
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      background-color: #f8f9fa;
-    }
-
-    /* === NAVBAR === */
+    /* NAVBAR */
     .navbar-brand { font-weight: bold; font-size: 24px; color: #444; }
     .nav-link { color: #333 !important; transition: 0.3s; padding: 8px 15px; border-radius: 6px; }
     .nav-link:hover { background-color: #f0f0f0; color: var(--accent-blue) !important; }
 
-    /* === CONTENT AREA === */
+    /* CONTENT AREA */
     .home-fullscreen {
-      width: 100%;
-      min-height: calc(100vh - 70px);
+      width: 100%; min-height: calc(100vh - 70px);
       background: url('homescreen.png') center center / contain no-repeat;
-      background-color: #ffffff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 20px;
+      background-color: #ffffff; display: flex; flex-direction: column; align-items: center; padding-top: 20px;
     }
 
-    /* === LEADERBOARD === */
+    /* LEADERBOARD */
     .leaderboard-container { display: flex; gap: 20px; margin-bottom: 30px; justify-content: center; width: 100%; max-width: 1200px; }
     .rank-card { background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); flex: 1; max-width: 250px; border-top: 5px solid #eee; }
-    .rank-1 { border-color: #ffd700; }
-    .rank-2 { border-color: #c0c0c0; }
-    .rank-3 { border-color: #cd7f32; }
+    .rank-1 { border-color: #ffd700; } .rank-2 { border-color: #c0c0c0; } .rank-3 { border-color: #cd7f32; }
 
-    /* === DASHBOARD TABLE === */
+    /* TABLE STYLE */
     .dashboard-card { width: 95%; max-width: 1400px; background: white; border-radius: 20px; padding: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); margin-bottom: 50px; }
-    
     .table-responsive { border-radius: 12px; overflow: hidden; }
-
-    /* HEADER TABEL: Background Gelap, Teks Putih */
-    .table thead th {
-      background-color: var(--primary-blue) !important;
-      color: #ffffff !important;
-      font-size: 11px;
-      text-transform: uppercase;
-      font-weight: 700;
-      padding: 12px 8px;
-      border: 1px solid #003366;
-      white-space: nowrap;
-    }
-
-    /* Kolom Indikator (Sticky) */
-    .sticky-col {
-      position: sticky;
-      left: 0;
-      background-color: #fdfdfd !important;
-      z-index: 10;
-      font-weight: 600;
-      border-right: 2px solid #dee2e6 !important;
-      text-align: left !important;
-      min-width: 220px;
-    }
-
-    /* Warna Pencapaian */
+    .table thead th { background-color: var(--primary-blue) !important; color: #ffffff !important; font-size: 11px; text-transform: uppercase; font-weight: 700; padding: 12px 8px; border: 1px solid #003366; white-space: nowrap; }
+    
+    .sticky-col { position: sticky; left: 0; background-color: #fdfdfd !important; z-index: 10; font-weight: 600; border-right: 2px solid #dee2e6 !important; text-align: left !important; min-width: 220px; }
     .bg-pass { background-color: #e3fcef !important; color: #008a52 !important; }
     .bg-fail { background-color: #fff5f5 !important; color: #e53e3e !important; }
 
-    #loadingOverlay {
-      display: none; position: fixed; inset: 0; background: rgba(255, 255, 255, 0.9);
-      z-index: 9999; flex-direction: column; align-items: center; justify-content: center;
-    }
+    #loadingOverlay { display: none; position: fixed; inset: 0; background: rgba(255, 255, 255, 0.9); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
   </style>
 </head>
 <body>
@@ -91,23 +49,20 @@
       <a class="navbar-brand" href="javascript:void(0)" onclick="location.reload()">
         <img src="PERFORMANCE TEAM.png" style="height: 40px; margin-right: 10px;"> PERFORMANCE BAN-TAN
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Rangking</a>
             <ul class="dropdown-menu">
               <li><a class="dropdown-item" href="javascript:void(0)" onclick="loadB2CData()">Rangking B2C</a></li>
-              <li><a class="dropdown-item" href="javascript:void(0)" onclick="showNotAvailable()">Rangking B2B</a></li>
+              <li><a class="dropdown-item" href="javascript:void(0)" onclick="loadB2BData()">Rangking B2B</a></li>
             </ul>
           </li>
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">KPI B2C</a>
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">KPI</a>
             <ul class="dropdown-menu">
               <li><a class="dropdown-item" href="javascript:void(0)" onclick="loadB2CData()">Dashboard B2C</a></li>
-              <li><a class="dropdown-item" href="javascript:void(0)" onclick="showNotAvailable()">Improvement B2C</a></li>
+              <li><a class="dropdown-item" href="javascript:void(0)" onclick="loadB2BData()">Dashboard B2B</a></li>
             </ul>
           </li>
         </ul>
@@ -128,89 +83,122 @@
     function showLoading() { document.getElementById('loadingOverlay').style.display = 'flex'; }
     function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none'; }
 
-    async function loadB2CData() {
+    async function loadSheetData(sheetName, title) {
       showLoading();
       try {
-        const response = await fetch(SCRIPT_URL);
+        const response = await fetch(`${SCRIPT_URL}?sheet=${sheetName}`);
         const data = await response.json();
-        
         const container = document.getElementById('homeFullscreen');
         container.style.background = "none";
         container.style.backgroundColor = "#f0f2f5";
 
-        // Leaderboard Logic
-        const names = data[0].slice(4);
-        const achs = data[29].slice(4);
-        const ranks = data[30].slice(4);
-        let performers = names.map((n, i) => ({ name: n, ach: achs[i], rank: parseInt(ranks[i]) }))
-                         .filter(x => !isNaN(x.rank)).sort((a,b) => a.rank - b.rank);
+        let html = "";
+        
+        if (sheetName === 'b2b') {
+          // KHUSUS B2B: Range A3:G54 [web:14]
+          // Header di data index 0 (Baris 3)
+          // Baris Achievement di index 50 (Baris 53)
+          // Baris Ranking di index 51 (Baris 54)
+          const headers = ["INDIKATOR", "BOBOT", "TARGET", "BANTEN (VAL)", "BANTEN (RES)", "", "TANGERANG"];
+          const rowAch = 50;
+          const rowRank = 51;
 
-        let leaderboardHtml = `<div class="leaderboard-container">`;
-        performers.slice(0, 3).forEach((p, idx) => {
-          leaderboardHtml += `
-            <div class="rank-card rank-${idx+1}">
-              <div class="small text-muted fw-bold">RANK ${p.rank}</div>
-              <h5 class="fw-bold my-2">${p.name}</h5>
-              <div class="h4 fw-bold text-primary">${parseFloat(p.ach).toFixed(2)}%</div>
+          // Leaderboard B2B (Banten & Tangerang)
+          html += `<div class="leaderboard-container">
+            <div class="rank-card rank-1">
+              <div class="small text-muted fw-bold text-uppercase">BANTEN</div>
+              <h5 class="fw-bold my-2">Achievement</h5>
+              <div class="h4 fw-bold text-primary">${parseFloat(data[rowAch][4]).toFixed(2)}%</div>
+            </div>
+            <div class="rank-card rank-2">
+              <div class="small text-muted fw-bold text-uppercase">TANGERANG</div>
+              <h5 class="fw-bold my-2">Achievement</h5>
+              <div class="h4 fw-bold text-primary">${parseFloat(data[rowAch][6]).toFixed(2)}%</div>
+            </div>
+          </div>`;
+
+          html += `
+            <div class="dashboard-card">
+              <h5 class="fw-bold mb-4 text-primary"><i class="fas fa-table me-2"></i> ${title}</h5>
+              <div class="table-responsive">
+                <table class="table table-sm table-bordered table-hover align-middle text-center" style="font-size: 11px;">
+                  <thead>
+                    <tr>${headers.filter(h => h !== "").map((h, i) => `<th class="${i === 0 ? 'sticky-col' : ''}">${h}</th>`).join('')}</tr>
+                  </thead>
+                  <tbody>
+                    ${data.slice(2, rowRank + 1).map((row, rIdx) => {
+                      const filteredRow = [row[0], row[1], row[2], row[3], row[4], row[6]];
+                      return `<tr>
+                        ${filteredRow.map((cell, cIdx) => {
+                          let className = cIdx === 0 ? 'sticky-col' : '';
+                          let val = (typeof cell === 'number' && cIdx > 1) ? cell.toFixed(2) : (cell === '✅' ? '<i class="fas fa-check-circle text-success"></i>' : (cell === '❌' ? '<i class="fas fa-times-circle text-danger"></i>' : cell));
+                          
+                          // Conditional Color for Banten & Tangerang Result
+                          if (rIdx < 48 && (cIdx === 4 || cIdx === 5)) {
+                            const target = parseFloat(row[2]);
+                            const current = parseFloat(row[cIdx === 4 ? 3 : 6]);
+                            if (!isNaN(target) && !isNaN(current)) {
+                              const isGood = (rIdx === 13 || rIdx === 14) ? current <= target : current >= target;
+                              className += isGood ? ' bg-pass' : ' bg-fail';
+                            }
+                          }
+                          return `<td class="${className}">${val}</td>`;
+                        }).join('')}
+                      </tr>`;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
             </div>`;
-        });
-        leaderboardHtml += `</div>`;
+        } else {
+          // LOGIKA B2C (Tetap seperti sebelumnya)
+          const rowAch = 29; const rowRank = 30;
+          const names = data[0].slice(4);
+          const achs = data[rowAch].slice(4);
+          const ranks = data[rowRank].slice(4);
+          let performers = names.map((n, i) => ({ name: n, ach: achs[i], rank: parseInt(ranks[i]) }))
+                           .filter(x => !isNaN(x.rank)).sort((a,b) => a.rank - b.rank);
 
-        // Table Logic (Slicing to remove "No" column)
-        let tableHtml = `
-          <div class="dashboard-card">
-            <h5 class="fw-bold mb-4 text-primary"><i class="fas fa-chart-bar me-2"></i> DATA PENCAPAIAN KPI B2C</h5>
+          html += `<div class="leaderboard-container">`;
+          performers.slice(0, 3).forEach((p, idx) => {
+            html += `<div class="rank-card rank-${idx+1}"><div class="small text-muted fw-bold">RANK ${p.rank}</div><h5 class="fw-bold my-2">${p.name}</h5><div class="h4 fw-bold text-primary">${parseFloat(p.ach).toFixed(2)}%</div></div>`;
+          });
+          html += `</div>`;
+
+          html += `<div class="dashboard-card">
+            <h5 class="fw-bold mb-4 text-primary"><i class="fas fa-table me-2"></i> ${title}</h5>
             <div class="table-responsive">
               <table class="table table-sm table-bordered table-hover align-middle text-center" style="font-size: 11px;">
-                <thead>
-                  <tr>
-                    ${data[0].slice(1).map((h, i) => `<th class="${i === 0 ? 'sticky-col' : ''}">${h}</th>`).join('')}
-                  </tr>
-                </thead>
+                <thead><tr>${data[0].slice(1).map((h, i) => `<th class="${i === 0 ? 'sticky-col' : ''}">${h}</th>`).join('')}</tr></thead>
                 <tbody>
-                  ${data.slice(1).map((row, rIdx) => `
-                    <tr>
-                      ${row.slice(1).map((cell, cIdx) => {
-                        let className = cIdx === 0 ? 'sticky-col' : '';
-                        let val = typeof cell === 'number' && cIdx > 1 ? cell.toFixed(2) : cell;
-                        
-                        // Color Logic (Index adjusted because Column A is removed)
-                        // Target is at original index 3, now index 2 in the sliced row
-                        if (rIdx < 27 && cIdx >= 3) {
-                          const target = parseFloat(row[3]); 
-                          const current = parseFloat(cell);
-                          if (!isNaN(target) && !isNaN(current)) {
-                            const isGood = (rIdx === 2) ? current <= target : current >= target;
-                            className += isGood ? ' bg-pass' : ' bg-fail';
-                          }
+                  ${data.slice(1, rowAch).map((row, rIdx) => `<tr>
+                    ${row.slice(1).map((cell, cIdx) => {
+                      let className = cIdx === 0 ? 'sticky-col' : '';
+                      let val = typeof cell === 'number' && cIdx > 1 ? cell.toFixed(2) : cell;
+                      if (cIdx >= 3) {
+                        const target = parseFloat(row[3]); const current = parseFloat(cell);
+                        if (!isNaN(target) && !isNaN(current)) {
+                          const isGood = (rIdx === 2) ? current <= target : current >= target;
+                          className += isGood ? ' bg-pass' : ' bg-fail';
                         }
-                        return `<td class="${className}">${val}</td>`;
-                      }).join('')}
-                    </tr>
-                  `).join('')}
+                      }
+                      return `<td class="${className}">${val}</td>`;
+                    }).join('')}
+                  </tr>`).join('')}
                 </tbody>
               </table>
             </div>
           </div>`;
-
-        container.innerHTML = leaderboardHtml + tableHtml;
+        }
+        container.innerHTML = html;
       } catch (error) {
         alert("Gagal memuat data.");
       } finally { hideLoading(); }
     }
 
-    function showNotAvailable() {
-      showLoading();
-      setTimeout(() => {
-        hideLoading();
-        document.getElementById('homeFullscreen').innerHTML = `
-          <div class="text-center mt-5">
-            <img src="under contruction.png" style="width: 280px;">
-            <h4 class="text-danger fw-bold mt-4">⚠️ Halaman sedang dikembangkan</h4>
-            <button class="btn btn-primary rounded-pill mt-3 px-4" onclick="location.reload()">Kembali</button>
-          </div>`;
-      }, 500);
-    }
+    function loadB2CData() { loadSheetData('b2c', 'DATA PENCAPAIAN KPI B2C'); }
+    function loadB2BData() { loadSheetData('b2b', 'DATA PENCAPAIAN KPI B2B'); }
+    function showNotAvailable() { document.getElementById('homeFullscreen').innerHTML = `<div class="text-center mt-5"><img src="under contruction.png" style="width:280px;"><h4 class="text-danger fw-bold mt-4">Halaman sedang dikembangkan</h4></div>`; }
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
