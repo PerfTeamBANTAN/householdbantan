@@ -24,44 +24,41 @@
 
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: #000; /* fallback jika gambar belum load */
+      background-color: #000; /* fallback kalau gambar belum load */
       overflow: hidden;       /* tidak ada scroll */
     }
 
-    /* NAVBAR TRANSPARAN DI ATAS GAMBAR */
+    /* NAVBAR: fixed + background gelap transparan */
     .navbar {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       z-index: 10;
-      background-color: transparent !important; /* paksa transparan */
+      background: rgba(0, 0, 0, 0.6) !important; /* gelap transparan */
       box-shadow: none;
     }
 
-    /* Gunakan gaya 'dark' agar teks & icon putih */
-    .navbar.navbar-dark .navbar-brand,
-    .navbar.navbar-dark .nav-link {
-      color: #fff;
-    }
-
+    /* Skema dark: teks putih di atas background gelap */
     .navbar-brand {
       font-weight: bold;
       font-size: 24px;
+      color: #fff;
     }
 
-    .nav-link {
+    .navbar-nav .nav-link {
+      color: #fff !important;
       transition: 0.3s;
       padding: 8px 15px;
       border-radius: 6px;
     }
 
-    .nav-link:hover {
+    .navbar-nav .nav-link:hover {
       background-color: rgba(255, 255, 255, 0.15);
       color: #fff !important;
     }
 
-    /* Perbaiki dropdown agar tetap gelap di atas gambar */
+    /* dropdown agar konsisten gelap */
     .dropdown-menu {
       background-color: rgba(0, 0, 0, 0.85);
       border: none;
@@ -76,10 +73,10 @@
       color: #fff;
     }
 
-    /* HOMESCREEN: FULL 1 LAYAR, DI BELAKANG NAVBAR */
+    /* HOMESCREEN: FULL 1 LAYAR DI BELAKANG NAVBAR */
     .home-fullscreen {
       width: 100%;
-      height: 100vh; /* full viewport */
+      height: 100vh;
       background: url('homescreen.png') center center / cover no-repeat;
       background-color: #000;
       display: flex;
@@ -151,7 +148,7 @@
   </div>
 </nav>
 
-<!-- Homescreen full 1 layar, gambar penuh, navbar transparan di atas -->
+<!-- Homescreen full 1 layar -->
 <div class="home-fullscreen">
   <!-- Optional overlay text -->
   <!--
