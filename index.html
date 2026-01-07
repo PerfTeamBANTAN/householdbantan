@@ -90,7 +90,7 @@
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">KPI</a>
             <ul class="dropdown-menu">
-              <!-- Dashboard B2C dengan nested dropdown (FIXED) -->
+              <!-- Dashboard B2C -->
               <li class="dropdown dropend">
                 <a class="dropdown-item dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">
                   Dashboard B2C
@@ -102,7 +102,7 @@
               </li>
               <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item" href="javascript:void(0)" onclick="loadB2BData()">Dashboard B2B</a></li>
-              <!-- MENU BARU HUDDLE B2B (KOSONG) -->
+              <!-- Huddle B2B -->
               <li><a class="dropdown-item" href="javascript:void(0)" onclick="loadHuddleB2BData()">Huddle B2B</a></li>
             </ul>
           </li>
@@ -136,12 +136,21 @@
         let html = "";
         
         if (sheetName === 'b2b') {
+          // MODE DASHBOARD KPI B2B
           const headers = ["INDIKATOR", "BOBOT", "TARGET", "BANTEN (KPI)", "TANGERANG (KPI)", "BANTEN (ACH)", "TANGERANG (ACH)"];
           const rowAch = 50; 
 
           html += `<div class="leaderboard-container">
-            <div class="rank-card rank-1"><div class="small text-muted fw-bold">BANTEN</div><h5 class="fw-bold my-2">Achievement</h5><div class="h4 fw-bold text-primary">${parseFloat(data[rowAch][3]).toFixed(2)}%</div></div>
-            <div class="rank-card rank-2"><div class="small text-muted fw-bold">TANGERANG</div><h5 class="fw-bold my-2">Achievement</h5><div class="h4 fw-bold text-primary">${parseFloat(data[rowAch][4]).toFixed(2)}%</div></div>
+            <div class="rank-card rank-1">
+              <div class="small text-muted fw-bold">BANTEN</div>
+              <h5 class="fw-bold my-2">Achievement</h5>
+              <div class="h4 fw-bold text-primary">${parseFloat(data[rowAch][3]).toFixed(2)}%</div>
+            </div>
+            <div class="rank-card rank-2">
+              <div class="small text-muted fw-bold">TANGERANG</div>
+              <h5 class="fw-bold my-2">Achievement</h5>
+              <div class="h4 fw-bold text-primary">${parseFloat(data[rowAch][4]).toFixed(2)}%</div>
+            </div>
           </div>`;
 
           html += `
@@ -149,7 +158,9 @@
               <h5 class="fw-bold mb-4 text-primary"><i class="fas fa-table me-2"></i> ${title}</h5>
               <div class="table-responsive">
                 <table class="table table-sm table-bordered table-hover align-middle text-center" style="font-size: 11px;">
-                  <thead><tr>${headers.map((h, i) => `<th class="${i === 0 ? 'sticky-col' : ''}">${h}</th>`).join('')}</tr></thead>
+                  <thead>
+                    <tr>${headers.map((h, i) => `<th class="${i === 0 ? 'sticky-col' : ''}">${h}</th>`).join('')}</tr>
+                  </thead>
                   <tbody>
                     ${data.slice(2, rowAch).map((row) => {
                       const filteredRow = [row[0], row[1], row[2], row[3], row[4], row[5], row[6]];
@@ -159,7 +170,7 @@
                           let val = (typeof cell === 'number' && cIdx > 1 && cIdx < 5) ? cell.toFixed(2) : 
                                     (cell === '✅' ? '<i class="fas fa-check-circle text-success"></i>' : 
                                     (cell === '❌' ? '<i class="fas fa-times-circle text-danger"></i>' : cell));
-                          return `<td class="${className}">${val}</td>`;
+                          return `<td class="${className}">${val ?? ''}</td>`;
                         }).join('')}
                       </tr>`;
                     }).join('')}
@@ -167,16 +178,15 @@
                 </table>
               </div>
             </div>`;
-        } else {
+        } else if (sheetName === 'ioan banten' || sheetName === 'ioan tangerang') {
           // LOGIKA B2C (IOAN BANTEN & IOAN TANGERANG)
-          const rowAch = 33; // Baris 34 (TOTAL ACH)
-          const rowRank = 34; // Baris 35 (RANKING)
+          const rowAch = 33;
+          const rowRank = 34;
           
-          const headers = data[5]; // Baris 6 (Header dengan nama-nama HSA)
-          const achs = data[rowAch]; // Baris 34 (Achievement)
-          const ranks = data[rowRank]; // Baris 35 (Ranking)
+          const headers = data[5];
+          const achs = data[rowAch];
+          const ranks = data[rowRank];
 
-          // Ekstrak nama HSA (mulai dari kolom D index 3)
           const names = headers.slice(3).filter((h, i) => i % 2 === 0 && h && h !== '');
           const performances = [];
           
@@ -193,19 +203,24 @@
 
           html += `<div class="leaderboard-container">`;
           sorted.slice(0, 3).forEach((p, idx) => {
-            html += `<div class="rank-card rank-${idx+1}"><div class="small text-muted fw-bold">RANK ${p.rank}</div><h5 class="fw-bold my-2">${p.name}</h5><div class="h4 fw-bold text-primary">${p.ach.toFixed(2)}%</div></div>`;
+            html += `<div class="rank-card rank-${idx+1}">
+              <div class="small text-muted fw-bold">RANK ${p.rank}</div>
+              <h5 class="fw-bold my-2">${p.name}</h5>
+              <div class="h4 fw-bold text-primary">${p.ach.toFixed(2)}%</div>
+            </div>`;
           });
           html += `</div>`;
 
-          // Headers tabel: Indikator, Bobot, Target + nama-nama HSA
-          const tableHeaders = ['INDIKATOR', 'BOBOT', 'TARGET', ...headers.slice(3).slice(0, headers.slice(3).length).map((h, i) => h && h !== '' ? h : '')];
+          const tableHeaders = ['INDIKATOR', 'BOBOT', 'TARGET', ...headers.slice(3).map(h => h || '')];
           
           html += `
             <div class="dashboard-card">
               <h5 class="fw-bold mb-4 text-primary"><i class="fas fa-table me-2"></i> ${title}</h5>
               <div class="table-responsive">
                 <table class="table table-sm table-bordered table-hover align-middle text-center" style="font-size: 11px;">
-                  <thead><tr>${tableHeaders.filter(h => h !== '').map((h, i) => `<th class="${i === 0 ? 'sticky-col' : ''}">${h}</th>`).join('')}</tr></thead>
+                  <thead>
+                    <tr>${tableHeaders.filter(h => h !== '').map((h, i) => `<th class="${i === 0 ? 'sticky-col' : ''}">${h}</th>`).join('')}</tr>
+                  </thead>
                   <tbody>
                     ${data.slice(6, rowAch).map((row) => {
                       return `<tr>
@@ -214,7 +229,7 @@
                           let val = (typeof cell === 'number' && cIdx > 1) ? cell.toFixed(2) : 
                                     (cell === '✅' ? '<i class="fas fa-check-circle text-success"></i>' : 
                                     (cell === '❌' ? '<i class="fas fa-times-circle text-danger"></i>' : cell));
-                          return `<td class="${className}">${val}</td>`;
+                          return `<td class="${className}">${val ?? ''}</td>`;
                         }).join('')}
                       </tr>`;
                     }).join('')}
@@ -239,17 +254,55 @@
       loadSheetData('b2b', 'DATA PENCAPAIAN KPI B2B'); 
     }
 
-    // FUNGSI HUDDLE B2B KOSONG (HANYA BERSIHKAN LAYAR & TAMPILKAN TITLE)
-    function loadHuddleB2BData() {
-      const container = document.getElementById('homeFullscreen');
-      container.style.background = "none";
-      container.style.backgroundColor = "#f0f2f5";
-      container.innerHTML = `
-        <div class="dashboard-card">
-          <h5 class="fw-bold mb-2 text-primary"><i class="fas fa-users me-2"></i> HUDDLE B2B</h5>
-          <p class="text-muted mb-0" style="font-size: 13px;">Konten huddle B2B akan ditambahkan di sini.</p>
-        </div>
-      `;
+    // HUDDLE B2B: menampilkan tabel data tiket dari sheet B2B (file yang sama)
+    async function loadHuddleB2BData() {
+      showLoading();
+      try {
+        const response = await fetch(`${SCRIPT_URL}?sheet=b2b`); // gunakan sheet B2B yang sama
+        const data = await response.json(); // diasumsikan bentuknya array 2D sama seperti KPI B2B
+        const container = document.getElementById('homeFullscreen');
+        container.style.background = "none";
+        container.style.backgroundColor = "#f0f2f5";
+
+        // Anggap baris pertama = header data tiket (seperti INCIDENT, TTR CUSTOMER, SUMMARY, dst)
+        const headers = data[0] || [];
+
+        let html = `
+          <div class="dashboard-card">
+            <h5 class="fw-bold mb-3 text-primary">
+              <i class="fas fa-users me-2"></i> HUDDLE B2B - DATA TIKET B2B
+            </h5>
+            <p class="text-muted mb-3" style="font-size: 12px;">
+              Data diambil dari sheet <span class="fw-semibold">B2B</span> untuk kebutuhan huddle operasional B2B (incident dan status terkini).
+            </p>
+            <div class="table-responsive" style="max-height: 70vh;">
+              <table class="table table-sm table-bordered table-hover align-middle text-center" style="font-size: 11px;">
+                <thead>
+                  <tr>
+                    ${headers.map((h, idx) => `<th class="${idx === 0 ? 'sticky-col' : ''}">${h || ''}</th>`).join('')}
+                  </tr>
+                </thead>
+                <tbody>
+                  ${data.slice(1).map(row => `
+                    <tr>
+                      ${row.map((cell, idx) => {
+                        const className = idx === 0 ? 'sticky-col' : '';
+                        return `<td class="${className}">${cell ?? ''}</td>`;
+                      }).join('')}
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+
+        container.innerHTML = html;
+      } catch (e) {
+        alert('Gagal memuat data huddle B2B.');
+      } finally {
+        hideLoading();
+      }
     }
   </script>
 
