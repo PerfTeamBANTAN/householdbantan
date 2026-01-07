@@ -56,16 +56,17 @@
       }
     }
 
-    /* Homescreen section di bawah navbar */
+    /* Homescreen full layar (viewport height - navbar) */
     .home-fullscreen {
       width: 100%;
+      /* Sesuaikan 70px jika tinggi navbar berbeda */
       min-height: calc(100vh - 70px);
-      background: url('homescreen.png') center center / contain no-repeat;
+      background: url('homescreen.png') center center / cover no-repeat;
       background-color: #ffffff;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding-top: 20px;
+      padding: 0;
     }
   </style>
 </head>
@@ -126,12 +127,13 @@
   </div>
 </nav>
 
-<!-- Homescreen kosong (hanya background gambar) -->
+<!-- Homescreen full layar -->
 <div class="home-fullscreen">
-  <!-- Kalau mau text sambutan tinggal aktifkan:
-  <div class="text-center">
-    <h1 class="h3 fw-bold text-primary mb-2">PERFORMANCE BAN-TAN</h1>
-    <p class="text-muted mb-0">Silakan pilih menu di navbar untuk melihat dashboard.</p>
+  <!-- Optional: text welcome -->
+  <!--
+  <div class="text-center text-white text-shadow">
+    <h1 class="h3 fw-bold mb-2">PERFORMANCE BAN-TAN</h1>
+    <p class="mb-0">Silakan pilih menu di navbar untuk melihat dashboard.</p>
   </div>
   -->
 </div>
