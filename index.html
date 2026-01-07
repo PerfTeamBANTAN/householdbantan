@@ -16,12 +16,18 @@
       --accent-blue: #007bff;
     }
 
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+    }
+
     body {
       font-family: 'Segoe UI', sans-serif;
       background-color: #f8f9fa;
-      margin: 0;
-      /* beri ruang setinggi navbar supaya konten tidak ketutup */
-      padding-top: 70px; /* sesuaikan jika tinggi navbar berbeda */
+      display: flex;
+      flex-direction: column; /* navbar di atas, homescreen isi sisa tinggi */
+      overflow: hidden;       /* hilangkan scroll */
     }
 
     .navbar-brand {
@@ -58,16 +64,20 @@
       }
     }
 
-    /* Homescreen full layar di bawah navbar */
+    /* Navbar sticky di atas */
+    .navbar {
+      z-index: 10;
+    }
+
+    /* Homescreen isi semua tinggi tersisa di bawah navbar */
     .home-fullscreen {
+      flex: 1; /* ambil semua sisa tinggi body */
       width: 100%;
-      min-height: 100vh; /* full tinggi viewport */
       background: url('homescreen.png') center center / cover no-repeat;
       background-color: #ffffff;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0;
     }
   </style>
 </head>
@@ -128,7 +138,7 @@
   </div>
 </nav>
 
-<!-- Homescreen full layar di bawah navbar -->
+<!-- Homescreen full sisa layar, tanpa scroll -->
 <div class="home-fullscreen">
   <!-- Optional: text welcome -->
   <!--
