@@ -24,62 +24,79 @@
 
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: #f8f9fa;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden; /* hilangkan scroll */
+      background-color: #000; /* fallback jika gambar belum load */
+      overflow: hidden;       /* tidak ada scroll */
+    }
+
+    /* NAVBAR TRANSPARAN DI ATAS GAMBAR */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      background-color: transparent !important; /* paksa transparan */
+      box-shadow: none;
+    }
+
+    /* Gunakan gaya 'dark' agar teks & icon putih */
+    .navbar.navbar-dark .navbar-brand,
+    .navbar.navbar-dark .nav-link {
+      color: #fff;
     }
 
     .navbar-brand {
       font-weight: bold;
       font-size: 24px;
-      color: #444;
     }
 
     .nav-link {
-      color: #333 !important;
       transition: 0.3s;
       padding: 8px 15px;
       border-radius: 6px;
     }
 
     .nav-link:hover {
-      background-color: #f0f0f0;
-      color: var(--accent-blue) !important;
+      background-color: rgba(255, 255, 255, 0.15);
+      color: #fff !important;
     }
 
-    /* Nested dropdown fix (kalau nanti dipakai lagi) */
-    .dropdown-submenu {
-      position: relative;
+    /* Perbaiki dropdown agar tetap gelap di atas gambar */
+    .dropdown-menu {
+      background-color: rgba(0, 0, 0, 0.85);
+      border: none;
     }
 
-    .dropdown-menu .dropdown-menu {
-      margin-left: 10px;
-      top: 0;
+    .dropdown-item {
+      color: #fff;
     }
 
-    @media (min-width: 992px) {
-      .dropdown-menu .dropdown-menu {
-        margin-left: 10px;
-      }
+    .dropdown-item:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #fff;
     }
 
-    /* Homescreen: mulai di bawah navbar dan pas 1 layar */
+    /* HOMESCREEN: FULL 1 LAYAR, DI BELAKANG NAVBAR */
     .home-fullscreen {
-      margin-top: 70px;                 /* kira-kira tinggi navbar */
       width: 100%;
-      height: calc(100vh - 70px);       /* tinggi viewport - tinggi navbar */
+      height: 100vh; /* full viewport */
       background: url('homescreen.png') center center / cover no-repeat;
-      background-color: #ffffff;
+      background-color: #000;
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+
+    .home-overlay {
+      text-align: center;
+      color: #fff;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.6);
     }
   </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+<nav class="navbar navbar-expand-lg navbar-dark">
   <div class="container-fluid">
     <a class="navbar-brand" href="javascript:void(0)" onclick="location.reload()">
       <img src="PERFORMANCE TEAM.png" style="height: 40px; margin-right: 10px;" alt="Logo">
@@ -111,7 +128,7 @@
             KPI
           </a>
           <ul class="dropdown-menu">
-            <!-- Dashboard B2C nested (struktur tetap, belum ada JS) -->
+            <!-- Dashboard B2C nested -->
             <li class="dropdown dropend">
               <a class="dropdown-item dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">
                 Dashboard B2C
@@ -134,11 +151,11 @@
   </div>
 </nav>
 
-<!-- Homescreen tepat di bawah navbar, full layar, tanpa scroll -->
+<!-- Homescreen full 1 layar, gambar penuh, navbar transparan di atas -->
 <div class="home-fullscreen">
-  <!-- Optional: text welcome -->
+  <!-- Optional overlay text -->
   <!--
-  <div class="text-center text-white text-shadow">
+  <div class="home-overlay">
     <h1 class="h3 fw-bold mb-2">PERFORMANCE BAN-TAN</h1>
     <p class="mb-0">Silakan pilih menu di navbar untuk melihat dashboard.</p>
   </div>
