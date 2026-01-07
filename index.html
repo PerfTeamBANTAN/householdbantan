@@ -26,8 +26,8 @@
       font-family: 'Segoe UI', sans-serif;
       background-color: #f8f9fa;
       display: flex;
-      flex-direction: column; /* navbar di atas, homescreen isi sisa tinggi */
-      overflow: hidden;       /* hilangkan scroll */
+      flex-direction: column;
+      overflow: hidden; /* hilangkan scroll */
     }
 
     .navbar-brand {
@@ -64,15 +64,11 @@
       }
     }
 
-    /* Navbar sticky di atas */
-    .navbar {
-      z-index: 10;
-    }
-
-    /* Homescreen isi semua tinggi tersisa di bawah navbar */
+    /* Homescreen: mulai di bawah navbar dan pas 1 layar */
     .home-fullscreen {
-      flex: 1; /* ambil semua sisa tinggi body */
+      margin-top: 70px;                 /* kira-kira tinggi navbar */
       width: 100%;
+      height: calc(100vh - 70px);       /* tinggi viewport - tinggi navbar */
       background: url('homescreen.png') center center / cover no-repeat;
       background-color: #ffffff;
       display: flex;
@@ -138,7 +134,7 @@
   </div>
 </nav>
 
-<!-- Homescreen full sisa layar, tanpa scroll -->
+<!-- Homescreen tepat di bawah navbar, full layar, tanpa scroll -->
 <div class="home-fullscreen">
   <!-- Optional: text welcome -->
   <!--
