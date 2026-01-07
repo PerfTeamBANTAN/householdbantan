@@ -20,6 +20,8 @@
       font-family: 'Segoe UI', sans-serif;
       background-color: #f8f9fa;
       margin: 0;
+      /* beri ruang setinggi navbar supaya konten tidak ketutup */
+      padding-top: 70px; /* sesuaikan jika tinggi navbar berbeda */
     }
 
     .navbar-brand {
@@ -56,11 +58,10 @@
       }
     }
 
-    /* Homescreen full layar (viewport height - navbar) */
+    /* Homescreen full layar di bawah navbar */
     .home-fullscreen {
       width: 100%;
-      /* Sesuaikan 70px jika tinggi navbar berbeda */
-      min-height: calc(100vh - 70px);
+      min-height: 100vh; /* full tinggi viewport */
       background: url('homescreen.png') center center / cover no-repeat;
       background-color: #ffffff;
       display: flex;
@@ -127,7 +128,7 @@
   </div>
 </nav>
 
-<!-- Homescreen full layar -->
+<!-- Homescreen full layar di bawah navbar -->
 <div class="home-fullscreen">
   <!-- Optional: text welcome -->
   <!--
